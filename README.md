@@ -1,5 +1,7 @@
 # Predictive Reinforcement Learning-Based DNA Data Encoding
 
+**🟢 Live Demo:** [https://adaptive-dna-encoding.netlify.app/](https://adaptive-dna-encoding.netlify.app/)
+
 This project demonstrates a complete, visual pipeline for encoding digital binary data into DNA sequences. It uses Reinforcement Learning (Proximal Policy Optimization) combined with an Error Predictor to learn the most robust mappings from bits to nucleotides (A, C, G, T) while maximizing biological stability (GC content and minimizing homopolymers).
 
 To combat the inherent noise in DNA synthesis and sequencing, the pipeline utilizes **multi-copy redundancy** (e.g., storing 3 or 5 copies of the DNA sequence) and a consensus majority-voting algorithm to dramatically improve data retrieval accuracy.
