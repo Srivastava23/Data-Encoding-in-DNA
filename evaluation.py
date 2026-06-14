@@ -1,0 +1,369 @@
+"""
+Evaluate and compare encoding strategies with statistical validation.
+
+Four methods are compared:
+    1. Fixed baseline  (canonical 00->A, 01->C, 10->G, 11->T)
+    2. Random encoding (random mapping permutation each trial)
+    3. Reinforcement learning encoding (PPO agent, no predictor)
+    4. Predictive reinforcement learning (PPO agent + error predictor in reward)
+
+Additionally, multi-copy redundancy is evaluated for each method.
+
+Evaluation uses frozen datasets: the same binary data is used
+across all four methods for fair comparison. Data is generated once
+per (seed, sequence_length) pair and reused across all methods.
+"""
+
+import csv
+import os
+import numpy as np
+from typing import Dict, List, Optional
+from scipy import stats as scipy_stats
+
+from config import Config
+from encoding import (
+    BASELINE_MAPPING, BASELINE_MAPPING_INDEX, ALL_MAPPINGS,
+    generate_biased_binary, encode_binary_to_dna, encode_with_action,
+    decode_with_action, decode_action,
+    NUMBER_OF_ACTIONS, NUMBER_OF_MAPPINGS,
+    DATA_PROFILES,
+)
+from error_simulation import simulate_errors, compute_error_rate
+from decoder import decode_dna_to_binary, compute_bit_accuracy
+from sequence_metrics import gc_content, stability_score, normalized_max_homopolymer
+from rl_agent import PPOAgent
+from error_predictor import ErrorPredictor
+from redundancy import encode_with_redundancy
+
+
+# frozen dataset generation
+
+def generate_frozen_dataset(
+    sequence_length: int, number_of_trials: int, seed: int,
+) -> List[np.ndarray]:
+    """
+    Generate a fixed set of binary data samples for evaluation.
+
+    Uses a mix of all three data profiles (high_gc, low_gc, balanced)
+    with a deterministic random number generator seeded per (seed, sequence_length).
+    The same dataset is reused for all methods to eliminate data variance.
+    """
+    # unique deterministic seed per (seed, sequence_length) pair
+    evaluation_random_generator = np.random.default_rng(seed * 10000 + sequence_length)
+    number_of_bits = sequence_length * 2
+    dataset: List[np.ndarray] = []
+
+    for trial_index in range(number_of_trials):
+        # cycle through profiles so each gets equal representation
+        profile_function = DATA_PROFILES[trial_index % len(DATA_PROFILES)]
+        dataset.append(profile_function(number_of_bits, evaluation_random_generator))
+
+    return dataset
+
+
+# single-trial helpers
+
+def _evaluate_baseline_trial(
+    binary_bits: np.ndarray, config: Config, random_generator: np.random.Generator,
+) -> Dict[str, float]:
+    """Encode with fixed baseline, simulate errors, decode, return metrics."""
+    dna_sequence = encode_binary_to_dna(binary_bits, BASELINE_MAPPING)
+    mutated_sequence, _ = simulate_errors(dna_sequence, config.substitution_rate,
+                                          config.insertion_rate, config.deletion_rate, random_generator)
+    decoded_bits = decode_dna_to_binary(mutated_sequence, BASELINE_MAPPING)
+    return _compute_metrics(binary_bits, dna_sequence, mutated_sequence, decoded_bits)
+
+
+def _evaluate_random_trial(
+    binary_bits: np.ndarray, config: Config, random_generator: np.random.Generator,
+) -> Dict[str, float]:
+    """Encode with a random mapping, simulate errors, decode."""
+    mapping_index = random_generator.integers(0, NUMBER_OF_MAPPINGS)
+    mapping = ALL_MAPPINGS[mapping_index]
+    dna_sequence = encode_binary_to_dna(binary_bits, mapping)
+    mutated_sequence, _ = simulate_errors(dna_sequence, config.substitution_rate,
+                                          config.insertion_rate, config.deletion_rate, random_generator)
+    decoded_bits = decode_dna_to_binary(mutated_sequence, mapping)
+    return _compute_metrics(binary_bits, dna_sequence, mutated_sequence, decoded_bits)
+
+
+def _evaluate_reinforcement_learning_trial(
+    binary_bits: np.ndarray, config: Config, random_generator: np.random.Generator,
+    agent: PPOAgent, sequence_length: int,
+) -> Dict[str, float]:
+    """Encode using the reinforcement learning agent's chosen action, conditioned on data distribution."""
+    from rl_environment import _compute_dibit_distribution
+
+    # compute state from this specific data sample
+    dibit_distribution = _compute_dibit_distribution(binary_bits)
+    state = np.array([
+        dibit_distribution[0], dibit_distribution[1], dibit_distribution[2], dibit_distribution[3],
+        float(np.max(dibit_distribution)),
+        sequence_length / 256.0,
+    ], dtype=np.float32)
+
+    action, _, _ = agent.select_action(state)
+
+    # encode
+    dna_sequence, primary_index, secondary_index = encode_with_action(binary_bits, action, random_generator)
+    # error simulation
+    mutated_sequence, _ = simulate_errors(dna_sequence, config.substitution_rate,
+                                          config.insertion_rate, config.deletion_rate, random_generator)
+    # decode with the same action
+    decoded_bits = decode_with_action(mutated_sequence, action, sequence_length)
+    return _compute_metrics(binary_bits, dna_sequence, mutated_sequence, decoded_bits)
+
+
+def _evaluate_redundancy_trial(
+    binary_bits: np.ndarray, config: Config, random_generator: np.random.Generator,
+    agent: PPOAgent, sequence_length: int,
+) -> Dict[str, float]:
+    """Evaluate multi-copy redundancy with the reinforcement learning agent."""
+    from rl_environment import _compute_dibit_distribution
+
+    dibit_distribution = _compute_dibit_distribution(binary_bits)
+    state = np.array([
+        dibit_distribution[0], dibit_distribution[1], dibit_distribution[2], dibit_distribution[3],
+        float(np.max(dibit_distribution)),
+        sequence_length / 256.0,
+    ], dtype=np.float32)
+
+    action, _, _ = agent.select_action(state)
+
+    result = encode_with_redundancy(binary_bits, action, random_generator, config)
+
+    return {
+        "bit_accuracy": result["redundancy_accuracy"],
+        "error_rate": result["consensus_error_rate"],
+        "gc_content": gc_content(result["original_dna"]),
+        "stability": stability_score(result["original_dna"]),
+        "homopolymer": normalized_max_homopolymer(result["original_dna"]),
+        "single_copy_accuracy": result["single_copy_accuracy"],
+        "redundancy_accuracy": result["redundancy_accuracy"],
+        "number_of_copies": result["number_of_copies"],
+    }
+
+
+def _compute_metrics(original_bits, dna_sequence, mutated_sequence, decoded_bits) -> Dict[str, float]:
+    bit_accuracy = compute_bit_accuracy(original_bits, decoded_bits)
+    error_rate = compute_error_rate(dna_sequence, mutated_sequence)
+    gc_value = gc_content(dna_sequence)
+    stability = stability_score(dna_sequence)
+    homopolymer = normalized_max_homopolymer(dna_sequence)
+    return {
+        "bit_accuracy": bit_accuracy,
+        "error_rate": error_rate,
+        "gc_content": gc_value,
+        "stability": stability,
+        "homopolymer": homopolymer,
+    }
+
+
+# method evaluators (using frozen datasets)
+
+def evaluate_baseline(dataset: List[np.ndarray], config: Config,
+                      random_generator: np.random.Generator) -> List[Dict[str, float]]:
+    return [_evaluate_baseline_trial(binary_bits, config, random_generator) for binary_bits in dataset]
+
+
+def evaluate_random(dataset: List[np.ndarray], config: Config,
+                    random_generator: np.random.Generator) -> List[Dict[str, float]]:
+    return [_evaluate_random_trial(binary_bits, config, random_generator) for binary_bits in dataset]
+
+
+def evaluate_reinforcement_learning(dataset: List[np.ndarray], agent: PPOAgent, config: Config,
+                                    sequence_length: int, random_generator: np.random.Generator) -> List[Dict[str, float]]:
+    return [_evaluate_reinforcement_learning_trial(binary_bits, config, random_generator, agent, sequence_length) for binary_bits in dataset]
+
+
+def evaluate_redundancy(dataset: List[np.ndarray], agent: PPOAgent, config: Config,
+                        sequence_length: int, random_generator: np.random.Generator) -> List[Dict[str, float]]:
+    return [_evaluate_redundancy_trial(binary_bits, config, random_generator, agent, sequence_length) for binary_bits in dataset]
+
+
+# aggregation
+
+def _aggregate(results: List[Dict[str, float]]) -> Dict[str, float]:
+    keys = results[0].keys()
+    aggregated = {}
+    for key in keys:
+        values = [result[key] for result in results]
+        aggregated[f"average_{key}"] = float(np.mean(values))
+    aggregated["decode_accuracy"] = aggregated["average_bit_accuracy"] * 100.0
+    aggregated["gc_score"] = 1.0 - 2.0 * abs(aggregated["average_gc_content"] - 0.5)
+    aggregated["stability_score"] = aggregated["average_stability"]
+    aggregated["encoding_efficiency"] = aggregated["average_bit_accuracy"] * (1.0 - aggregated["average_error_rate"])
+    return aggregated
+
+
+# full comparison run
+
+def run_comparison(
+    config: Config,
+    agent_reinforcement_learning: PPOAgent,
+    agent_predictive: Optional[PPOAgent],
+    predictor: Optional[ErrorPredictor],
+    seed: int,
+) -> List[Dict]:
+    rows = []
+
+    for sequence_length in config.sequence_lengths:
+        # generate frozen dataset once, reused across ALL methods
+        dataset = generate_frozen_dataset(
+            sequence_length, config.trials_per_length, seed
+        )
+
+        # 1. baseline
+        baseline_results = _aggregate(evaluate_baseline(
+            dataset, config, np.random.default_rng(seed + 2000 + sequence_length)))
+        baseline_results.update({"seq_length": sequence_length, "method": "baseline", "seed": seed})
+        rows.append(baseline_results)
+
+        # 2. random
+        random_results = _aggregate(evaluate_random(
+            dataset, config, np.random.default_rng(seed + 3000 + sequence_length)))
+        random_results.update({"seq_length": sequence_length, "method": "random", "seed": seed})
+        rows.append(random_results)
+
+        # 3. reinforcement learning (no predictor)
+        reinforcement_learning_results = _aggregate(evaluate_reinforcement_learning(
+            dataset, agent_reinforcement_learning, config, sequence_length,
+            np.random.default_rng(seed + 4000 + sequence_length)))
+        reinforcement_learning_results.update({"seq_length": sequence_length, "method": "reinforcement_learning", "seed": seed})
+        rows.append(reinforcement_learning_results)
+
+        # 4. predictive reinforcement learning
+        if agent_predictive is not None:
+            predictive_results = _aggregate(evaluate_reinforcement_learning(
+                dataset, agent_predictive, config, sequence_length,
+                np.random.default_rng(seed + 5000 + sequence_length)))
+            predictive_results.update({"seq_length": sequence_length, "method": "predictive_reinforcement_learning", "seed": seed})
+            rows.append(predictive_results)
+
+            # 5. predictive reinforcement learning with redundancy
+            redundancy_results = _aggregate(evaluate_redundancy(
+                dataset, agent_predictive, config, sequence_length,
+                np.random.default_rng(seed + 6000 + sequence_length)))
+            redundancy_results.update({"seq_length": sequence_length, "method": "predictive_reinforcement_learning_redundancy", "seed": seed})
+            rows.append(redundancy_results)
+
+    return rows
+
+
+# ablation comparison
+
+def run_ablation_comparison(
+    config: Config,
+    agents: Dict[str, PPOAgent],
+    seed: int,
+) -> List[Dict]:
+    """
+    Evaluate ablation conditions on the same frozen datasets.
+
+    agents: dictionary mapping ablation name -> trained PPOAgent.
+    Expected keys: "predictive_reinforcement_learning", "reinforcement_learning",
+    "reinforcement_learning_no_gc", "reinforcement_learning_no_homopolymer".
+    The baseline is computed without any agent.
+    """
+    rows = []
+
+    for sequence_length in config.sequence_lengths:
+        dataset = generate_frozen_dataset(
+            sequence_length, config.trials_per_length, seed
+        )
+
+        # fixed baseline (no agent)
+        baseline_results = _aggregate(evaluate_baseline(
+            dataset, config, np.random.default_rng(seed + 2000 + sequence_length)
+        ))
+        baseline_results.update({"seq_length": sequence_length, "method": "baseline", "seed": seed})
+        rows.append(baseline_results)
+
+        # each ablation agent
+        for random_offset, (name, agent) in enumerate(agents.items(), start=4000):
+            result = _aggregate(evaluate_reinforcement_learning(
+                dataset, agent, config, sequence_length,
+                np.random.default_rng(seed + random_offset + sequence_length)
+            ))
+            result.update({"seq_length": sequence_length, "method": name, "seed": seed})
+            rows.append(result)
+
+    return rows
+
+
+# statistical summary
+
+def compute_statistics(all_rows: List[Dict], config: Config) -> List[Dict]:
+    from collections import defaultdict
+    grouped = defaultdict(list)
+    for row in all_rows:
+        key = (row["method"], row["seq_length"])
+        grouped[key].append(row)
+
+    summary_rows = []
+    metric_keys = ["average_error_rate", "decode_accuracy", "gc_score",
+                    "stability_score", "encoding_efficiency", "average_bit_accuracy"]
+
+    for (method, sequence_length), rows in sorted(grouped.items()):
+        summary = {"method": method, "seq_length": sequence_length}
+        for metric_key in metric_keys:
+            values = [row[metric_key] for row in rows if metric_key in row]
+            summary[f"{metric_key}_mean"] = float(np.mean(values)) if values else 0.0
+            summary[f"{metric_key}_std"] = float(np.std(values)) if values else 0.0
+        summary_rows.append(summary)
+
+    # t-tests: baseline versus reinforcement learning, baseline versus predictive, reinforcement learning versus predictive
+    ttest_pairs = [
+        ("baseline", "reinforcement_learning",
+         "t_statistic_versus_baseline", "p_value_versus_baseline"),
+        ("baseline", "predictive_reinforcement_learning",
+         "t_statistic_versus_baseline", "p_value_versus_baseline"),
+        ("reinforcement_learning", "predictive_reinforcement_learning",
+         "t_statistic_versus_reinforcement_learning", "p_value_versus_reinforcement_learning"),
+    ]
+
+    for sequence_length in config.sequence_lengths:
+        for method_a, method_b, t_column, p_column in ttest_pairs:
+            key_a = (method_a, sequence_length)
+            key_b = (method_b, sequence_length)
+            if key_a in grouped and key_b in grouped:
+                error_rates_a = [row["average_error_rate"] for row in grouped[key_a]]
+                error_rates_b = [row["average_error_rate"] for row in grouped[key_b]]
+                if len(error_rates_a) >= 2 and len(error_rates_b) >= 2:
+                    t_statistic, p_value = scipy_stats.ttest_ind(error_rates_a, error_rates_b)
+                    for summary in summary_rows:
+                        if summary["method"] == method_b and summary["seq_length"] == sequence_length:
+                            summary[t_column] = float(t_statistic)
+                            summary[p_column] = float(p_value)
+
+    return summary_rows
+
+
+# CSV export
+
+def export_results_csv(rows: List[Dict], path: str):
+    if not rows:
+        return
+    os.makedirs(os.path.dirname(path) if os.path.dirname(path) else ".", exist_ok=True)
+    all_keys = set()
+    for row in rows:
+        all_keys.update(row.keys())
+    fieldnames = sorted(all_keys)
+    with open(path, "w", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def export_statistics_csv(rows: List[Dict], path: str):
+    if not rows:
+        return
+    os.makedirs(os.path.dirname(path) if os.path.dirname(path) else ".", exist_ok=True)
+    all_keys = set()
+    for row in rows:
+        all_keys.update(row.keys())
+    fieldnames = sorted(all_keys)
+    with open(path, "w", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)

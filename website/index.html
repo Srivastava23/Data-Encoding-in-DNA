@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictive Reinforcement Learning-Based DNA Data Encoding</title>
+    <meta name="description" content="Research project using Reinforcement Learning to optimise DNA data encoding for error-resilient archival storage with multi-copy redundancy.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav id="navbar">
+    <div class="nav-brand">
+        <span class="dna-icon">🧬</span>
+        <span class="brand-text">DNA-RL</span>
+    </div>
+    <ul class="nav-links">
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#encoding-diagram">Encoding</a></li>
+        <li><a href="#dataset-section">Dataset</a></li>
+        <li><a href="#pipeline-demo">Pipeline</a></li>
+        <li><a href="#training-results">Training</a></li>
+        <li><a href="#error-laboratory">Error Lab</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+    </ul>
+    <button class="nav-toggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+    </button>
+</nav>
+
+<!-- Hero -->
+<section id="hero">
+    <div class="hero-bg-anim" id="dna-canvas"></div>
+    <div class="hero-content">
+        <p class="hero-tag">Research Project</p>
+        <h1>Predictive Reinforcement Learning-Based Optimisation <br>of <span class="gradient-text">DNA Data Encoding</span></h1>
+        <p class="hero-subtitle">
+            Investigating Reinforcement Learning with predictive error modelling and multi-copy redundancy
+            to reduce sequencing errors and improve decoding accuracy for DNA-based archival storage.
+        </p>
+        <div class="hero-stats">
+            <div class="stat-pill">
+                <span class="stat-value">100,000</span>
+                <span class="stat-label">Training Epochs</span>
+            </div>
+            <div class="stat-pill">
+                <span class="stat-value">3–5</span>
+                <span class="stat-label">Redundant Copies</span>
+            </div>
+            <div class="stat-pill">
+                <span class="stat-value">24</span>
+                <span class="stat-label">Encoding Mappings</span>
+            </div>
+        </div>
+        <a href="#encoding-diagram" class="cta-btn">Explore the Research ↓</a>
+    </div>
+</section>
+
+<!-- Encoding Diagram -->
+<section id="encoding-diagram" class="section">
+    <div class="container">
+        <h2 class="section-title">How Binary Maps to DNA</h2>
+        <p class="section-intro">
+            Digital data (binary 0s and 1s) is converted to DNA nucleotides in pairs called <strong>dibits</strong>.
+            Each 2-bit pair maps to one of four nucleotides: Adenine (A), Cytosine (C), Guanine (G), or Thymine (T).
+        </p>
+
+        <!-- Baseline Mapping Visual -->
+        <div class="mapping-showcase">
+            <h3>Baseline Mapping (Fixed)</h3>
+            <div class="mapping-visual">
+                <div class="mapping-arrow-group">
+                    <div class="dibit-box">00</div>
+                    <div class="mapping-arrow">→</div>
+                    <div class="nucleotide-box adenine">A</div>
+                    <span class="nucleotide-name">Adenine</span>
+                </div>
+                <div class="mapping-arrow-group">
+                    <div class="dibit-box">01</div>
+                    <div class="mapping-arrow">→</div>
+                    <div class="nucleotide-box cytosine">C</div>
+                    <span class="nucleotide-name">Cytosine</span>
+                </div>
+                <div class="mapping-arrow-group">
+                    <div class="dibit-box">10</div>
+                    <div class="mapping-arrow">→</div>
+                    <div class="nucleotide-box guanine">G</div>
+                    <span class="nucleotide-name">Guanine</span>
+                </div>
+                <div class="mapping-arrow-group">
+                    <div class="dibit-box">11</div>
+                    <div class="mapping-arrow">→</div>
+                    <div class="nucleotide-box thymine">T</div>
+                    <span class="nucleotide-name">Thymine</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="highlight-box" style="margin-top:2rem;">
+            <h3>Why 24 Mappings?</h3>
+            <p>
+                There are <strong>4! = 24</strong> possible ways to assign the four nucleotides to the four dibits.
+                The Reinforcement Learning agent learns to <em>pick the best mapping</em> for each data block —
+                choosing one that produces DNA with balanced GC content and minimal homopolymer runs,
+                which reduces sequencing errors.
+            </p>
+        </div>
+
+        <!-- All 24 mappings grid -->
+        <div class="all-mappings-section">
+            <h3>All 24 Possible Mappings</h3>
+            <div class="mappings-grid" id="mappings-grid">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Dataset Section -->
+<section id="dataset-section" class="section alt-bg">
+    <div class="container">
+        <h2 class="section-title">Dataset</h2>
+        <p class="section-intro">
+            The model is trained on synthetically generated binary data with three controlled distribution profiles,
+            ensuring generalisation across different types of input data.
+        </p>
+
+        <div class="card-grid three-col">
+            <div class="glass-card">
+                <div class="card-icon" style="color:#2ecc71;">●</div>
+                <h3>High GC Profile</h3>
+                <p>Binary data biased toward dibits 01 and 10, producing high Guanine-Cytosine content (~70%) under baseline mapping.</p>
+                <div class="profile-bar">
+                    <div class="profile-segment" style="width:10%;background:#2ecc71;" title="00: 10%"></div>
+                    <div class="profile-segment" style="width:35%;background:#3498db;" title="01: 35%"></div>
+                    <div class="profile-segment" style="width:35%;background:#f1c40f;" title="10: 35%"></div>
+                    <div class="profile-segment" style="width:20%;background:#e74c3c;" title="11: 20%"></div>
+                </div>
+            </div>
+            <div class="glass-card">
+                <div class="card-icon" style="color:#e74c3c;">●</div>
+                <h3>Low GC Profile</h3>
+                <p>Binary data biased toward dibits 00 and 11, producing low Guanine-Cytosine content (~30%) under baseline mapping.</p>
+                <div class="profile-bar">
+                    <div class="profile-segment" style="width:35%;background:#2ecc71;" title="00: 35%"></div>
+                    <div class="profile-segment" style="width:10%;background:#3498db;" title="01: 10%"></div>
+                    <div class="profile-segment" style="width:20%;background:#f1c40f;" title="10: 20%"></div>
+                    <div class="profile-segment" style="width:35%;background:#e74c3c;" title="11: 35%"></div>
+                </div>
+            </div>
+            <div class="glass-card">
+                <div class="card-icon" style="color:#f1c40f;">●</div>
+                <h3>Balanced Profile</h3>
+                <p>Roughly equal dibit frequencies (~25% each), producing balanced Guanine-Cytosine content (~50%) under any mapping.</p>
+                <div class="profile-bar">
+                    <div class="profile-segment" style="width:25%;background:#2ecc71;" title="00: 25%"></div>
+                    <div class="profile-segment" style="width:25%;background:#3498db;" title="01: 25%"></div>
+                    <div class="profile-segment" style="width:25%;background:#f1c40f;" title="10: 25%"></div>
+                    <div class="profile-segment" style="width:25%;background:#e74c3c;" title="11: 25%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-grid two-col" style="margin-top:2rem;">
+            <div class="glass-card">
+                <h3>📚 Curriculum Learning</h3>
+                <div class="curriculum-visual">
+                    <div class="curriculum-phase phase-easy">
+                        <span class="phase-label">Epochs 0–33%</span>
+                        <span class="phase-desc">Balanced only</span>
+                    </div>
+                    <div class="curriculum-phase phase-medium">
+                        <span class="phase-label">Epochs 33–66%</span>
+                        <span class="phase-desc">Mixed profiles</span>
+                    </div>
+                    <div class="curriculum-phase phase-hard">
+                        <span class="phase-label">Epochs 66–100%</span>
+                        <span class="phase-desc">All profiles</span>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card">
+                <h3>📊 Evaluation Setup</h3>
+                <ul class="setup-list">
+                    <li><strong>Sequence Lengths:</strong> 64, 128, 256 nucleotides</li>
+                    <li><strong>Trials per Length:</strong> 100 frozen evaluation trials</li>
+                    <li><strong>Seeds:</strong> 3–5 independent runs</li>
+                    <li><strong>Validation:</strong> Every 500 epochs on held-out data</li>
+                    <li><strong>Error Rates:</strong> 2% substitution, 1% insertion, 1% deletion</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Interactive Pipeline Demo -->
+<section id="pipeline-demo" class="section">
+    <div class="container">
+        <h2 class="section-title">Interactive Pipeline Demo</h2>
+        <p class="section-intro">
+            Type any text below and watch it flow through the entire DNA encoding pipeline —
+            from binary conversion to multi-copy storage, error simulation, majority voting, and decoding.
+        </p>
+
+        <!-- Input -->
+        <div class="pipeline-input-area">
+            <label for="demo-text-input">Enter text to encode:</label>
+            <textarea id="demo-text-input" rows="3" placeholder="Type your message here...">Hello DNA!</textarea>
+            <div class="pipeline-controls">
+                <button id="run-pipeline-button" class="cta-btn">▶ Run Pipeline</button>
+                <label for="copy-count-select">Copies:</label>
+                <select id="copy-count-select">
+                    <option value="1">1 copy</option>
+                    <option value="3" selected>3 copies</option>
+                    <option value="5">5 copies</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Pipeline Steps -->
+        <div class="pipeline-steps" id="pipeline-steps">
+            <!-- Step 1: Binary Conversion -->
+            <div class="pipeline-step" id="step-binary" data-step="1">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <h3>Binary Conversion</h3>
+                    <span class="step-status">Waiting</span>
+                </div>
+                <div class="step-content">
+                    <div class="binary-display" id="binary-display"></div>
+                    <div class="dibit-display" id="dibit-display"></div>
+                </div>
+            </div>
+
+            <!-- Step 2: Data Analysis -->
+            <div class="pipeline-step" id="step-analysis" data-step="2">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <h3>Data Analysis</h3>
+                    <span class="step-status">Waiting</span>
+                </div>
+                <div class="step-content">
+                    <div class="dibit-chart" id="dibit-chart"></div>
+                </div>
+            </div>
+
+            <!-- Step 3: Encoding Selection -->
+            <div class="pipeline-step" id="step-encoding" data-step="3">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <h3>Encoding Selection</h3>
+                    <span class="step-status">Waiting</span>
+                </div>
+                <div class="step-content">
+                    <div class="selected-mapping" id="selected-mapping"></div>
+                </div>
+            </div>
+
+            <!-- Step 4: DNA Encoding -->
+            <div class="pipeline-step" id="step-dna" data-step="4">
+                <div class="step-header">
+                    <div class="step-number">4</div>
+                    <h3>DNA Encoding</h3>
+                    <span class="step-status">Waiting</span>
+                </div>
+                <div class="step-content">
+                    <div class="dna-strand" id="dna-strand-original"></div>
+                    <div class="dna-metrics" id="dna-metrics"></div>
+                </div>
+            </div>
+
+            <!-- Step 5: Multi-Copy Storage -->
+            <div class="pipeline-step" id="step-copies" data-step="5">
+                <div class="step-header">
+                    <div class="step-number">5</div>
+                    <h3>Multi-Copy Storage</h3>
+                    <span class="step-status">Waiting</span>
+                </div>
+                <div class="step-content">
+                    <div class="copies-container" id="copies-container"></div>
+                </div>
+            </div>
+
+            <!-- Step 6: Error Simulation -->
+            <div class="pipeline-step" id="step-errors" data-step="6">
+                <div class="step-header">
+                    <div class="step-number">6</div>
+                    <h3>Error Simulation</h3>
+                    <span class="step-status">Waiting</span>
+                </div>
+                <div class="step-content">
+                    <div class="error-copies" id="error-copies"></div>
+                </div>
+            </div>
+
+            <!-- Step 7: Majority Voting -->
+            <div class="pipeline-step" id="step-voting" data-step="7">
+                <div class="step-header">
+                    <div class="step-number">7</div>
+                    <h3>Majority Voting</h3>
+                    <span class="step-status">Waiting</span>
+                </div>
+                <div class="step-content">
+                    <div class="voting-display" id="voting-display"></div>
+                </div>
+            </div>
+
+            <!-- Step 8: Decoding -->
+            <div class="pipeline-step" id="step-decode" data-step="8">
+                <div class="step-header">
+                    <div class="step-number">8</div>
+                    <h3>Decoding &amp; Results</h3>
+                    <span class="step-status">Waiting</span>
+                </div>
+                <div class="step-content">
+                    <div class="decode-results" id="decode-results"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Training Results -->
+<section id="training-results" class="section alt-bg">
+    <div class="container">
+        <h2 class="section-title">Training Results</h2>
+        <p class="section-intro">
+            Training curves from the Google Colab session. The model was trained for up to 100,000 epochs
+            with early stopping to prevent overfitting.
+        </p>
+
+        <div class="chart-section">
+            <h3 class="chart-title">Reward Over Training Epochs</h3>
+            <canvas id="training-reward-chart" width="900" height="350"></canvas>
+        </div>
+
+        <div class="card-grid two-col" style="margin-top:2rem;">
+            <div class="chart-section">
+                <h3 class="chart-title">Validation Reward</h3>
+                <canvas id="validation-reward-chart" width="400" height="250"></canvas>
+            </div>
+            <div class="chart-section">
+                <h3 class="chart-title">Error Predictor Loss</h3>
+                <canvas id="predictor-loss-chart" width="400" height="250"></canvas>
+            </div>
+        </div>
+
+        <div id="training-info-cards" class="card-grid three-col" style="margin-top:2rem;"></div>
+    </div>
+</section>
+
+<!-- Error Simulation Laboratory -->
+<section id="error-laboratory" class="section">
+    <div class="container">
+        <h2 class="section-title">Error Simulation Laboratory</h2>
+        <p class="section-intro">
+            Adjust error rates and see how they affect DNA sequences in real time.
+            Compare single-copy versus multi-copy redundancy at each error level.
+        </p>
+
+        <div class="lab-controls">
+            <div class="slider-group">
+                <label for="slider-substitution">Substitution Rate: <span id="val-substitution">2%</span></label>
+                <input type="range" id="slider-substitution" min="0" max="10" value="2" step="0.5">
+            </div>
+            <div class="slider-group">
+                <label for="slider-insertion">Insertion Rate: <span id="val-insertion">1%</span></label>
+                <input type="range" id="slider-insertion" min="0" max="10" value="1" step="0.5">
+            </div>
+            <div class="slider-group">
+                <label for="slider-deletion">Deletion Rate: <span id="val-deletion">1%</span></label>
+                <input type="range" id="slider-deletion" min="0" max="10" value="1" step="0.5">
+            </div>
+        </div>
+
+        <div class="lab-results">
+            <div class="lab-dna-display">
+                <h4>Original DNA Strand</h4>
+                <div class="dna-strand" id="lab-original-dna"></div>
+            </div>
+            <div class="lab-dna-display">
+                <h4>After Errors (Single Copy)</h4>
+                <div class="dna-strand" id="lab-mutated-dna"></div>
+            </div>
+            <div class="lab-stats" id="lab-stats"></div>
+        </div>
+
+        <div class="chart-section" style="margin-top:2rem;">
+            <h3 class="chart-title">Accuracy: Single Copy versus Multi-Copy Redundancy</h3>
+            <canvas id="redundancy-chart" width="600" height="300"></canvas>
+        </div>
+    </div>
+</section>
+
+<!-- Results Dashboard -->
+<section id="results" class="section alt-bg">
+    <div class="container">
+        <h2 class="section-title">Experimental Results</h2>
+        <p class="section-intro">
+            Performance of all methods across three DNA sequence lengths, averaged over multiple independent seeds.
+            Includes multi-copy redundancy results showing accuracy improvement.
+        </p>
+
+        <div class="chart-section">
+            <h3 class="chart-title">Average Error Rate <span class="chart-subtitle">(lower is better)</span></h3>
+            <canvas id="error-rate-chart" width="900" height="350"></canvas>
+        </div>
+
+        <div class="chart-section">
+            <h3 class="chart-title">Decode Accuracy % <span class="chart-subtitle">(higher is better)</span></h3>
+            <canvas id="accuracy-chart" width="900" height="350"></canvas>
+        </div>
+
+        <div class="table-wrapper">
+            <h3 class="chart-title">Full Results Table <span class="chart-subtitle">(mean ± standard deviation)</span></h3>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Sequence Length</th>
+                        <th>Error Rate</th>
+                        <th>Decode Accuracy %</th>
+                        <th>GC Score</th>
+                    </tr>
+                </thead>
+                <tbody id="results-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- Architecture -->
+<section id="architecture" class="section">
+    <div class="container">
+        <h2 class="section-title">System Architecture</h2>
+        <p class="section-intro">
+            The system has two complementary layers plus a multi-copy redundancy mechanism.
+        </p>
+
+        <div class="arch-diagram">
+            <div class="arch-layer layer-1">
+                <div class="layer-badge">Layer 1</div>
+                <h3>Reinforcement Learning Encoding Agent (PPO)</h3>
+                <p>A Proximal Policy Optimization agent with a shared Actor-Critic neural network.</p>
+                <div class="arch-details">
+                    <div class="detail-item">
+                        <span class="detail-label">State</span>
+                        <span class="detail-value">6-dimension: normalised dibit frequency vector (4) + max frequency + normalised sequence length</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Actions</span>
+                        <span class="detail-value">96 composite actions (24 mappings × 4 secondary groups)</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Network</span>
+                        <span class="detail-value">2×64 hidden layers, Tanh activation, 10% dropout</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arch-arrow">⟶ predicted error ⟶</div>
+
+            <div class="arch-layer layer-2">
+                <div class="layer-badge">Layer 2</div>
+                <h3>Error Predictor</h3>
+                <p>An MLP that estimates expected sequencing risk from DNA sequence features.</p>
+                <div class="arch-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Input</span>
+                        <span class="detail-value">GC content, entropy, homopolymers, sequence length, mapping index</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Output</span>
+                        <span class="detail-value">Predicted error rate (scalar)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arch-arrow">⟶ store multiple copies ⟶</div>
+
+            <div class="arch-layer layer-3">
+                <div class="layer-badge">Redundancy</div>
+                <h3>Multi-Copy Storage + Majority Voting</h3>
+                <p>3–5 copies stored independently. During retrieval, position-wise majority voting builds a consensus strand.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <p class="footer-text">
+            <span class="dna-icon">🧬</span>
+            Predictive Reinforcement Learning-Based DNA Data Encoding — Research Project
+        </p>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

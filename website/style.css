@@ -1,0 +1,262 @@
+/* ===== ROOT VARIABLES ===== */
+:root {
+    --bg-primary: #0a0e17;
+    --bg-secondary: #111827;
+    --bg-card: rgba(17, 24, 39, 0.7);
+    --bg-glass: rgba(255,255,255,0.04);
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-1: #6366f1;
+    --accent-2: #8b5cf6;
+    --accent-3: #a78bfa;
+    --gradient-1: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+    --gradient-2: linear-gradient(135deg, #06b6d4, #3b82f6);
+    --border-color: rgba(99,102,241,0.15);
+    --nucleotide-adenine: #2ecc71;
+    --nucleotide-cytosine: #3498db;
+    --nucleotide-guanine: #f1c40f;
+    --nucleotide-thymine: #e74c3c;
+    --error-substitution: #e74c3c;
+    --error-insertion: #f39c12;
+    --error-deletion: #95a5a6;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 30px rgba(0,0,0,0.3);
+    --transition: 0.3s cubic-bezier(.4,0,.2,1);
+}
+
+/* ===== RESET ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;font-size:16px;}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.7;overflow-x:hidden;}
+a{color:var(--accent-3);text-decoration:none;transition:var(--transition);}
+a:hover{color:#c4b5fd;}
+img{max-width:100%;display:block;}
+ul{list-style:none;}
+
+/* ===== NAVBAR ===== */
+#navbar{position:fixed;top:0;left:0;width:100%;z-index:1000;padding:0.8rem 2rem;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(20px);background:rgba(10,14,23,0.85);border-bottom:1px solid var(--border-color);transition:var(--transition);}
+.nav-brand{display:flex;align-items:center;gap:0.5rem;font-weight:700;font-size:1.2rem;}
+.dna-icon{font-size:1.4rem;}
+.brand-text{background:var(--gradient-1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-links{display:flex;gap:1.5rem;align-items:center;}
+.nav-links a{color:var(--text-secondary);font-size:0.85rem;font-weight:500;letter-spacing:0.02em;padding:0.4rem 0;position:relative;}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--gradient-1);transition:var(--transition);}
+.nav-links a:hover::after,.nav-links a.active::after{width:100%;}
+.nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:0.5rem;}
+.nav-toggle span{display:block;width:24px;height:2px;background:var(--text-primary);margin:5px 0;transition:var(--transition);}
+
+/* ===== HERO ===== */
+#hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;padding:6rem 2rem 4rem;}
+.hero-bg-anim{position:absolute;inset:0;overflow:hidden;z-index:0;}
+.hero-content{position:relative;z-index:1;max-width:900px;}
+.hero-tag{font-size:0.85rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--accent-3);margin-bottom:1rem;}
+#hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.15;margin-bottom:1.5rem;}
+.gradient-text{background:var(--gradient-1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero-subtitle{font-size:1.1rem;color:var(--text-secondary);max-width:700px;margin:0 auto 2rem;}
+.hero-stats{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;}
+.stat-pill{background:var(--bg-glass);border:1px solid var(--border-color);border-radius:50px;padding:0.8rem 1.5rem;display:flex;flex-direction:column;align-items:center;backdrop-filter:blur(10px);}
+.stat-value{font-size:1.6rem;font-weight:800;background:var(--gradient-1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-label{font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:0.2rem;}
+.cta-btn{display:inline-block;padding:0.9rem 2rem;background:var(--gradient-1);color:#fff;border:none;border-radius:50px;font-weight:600;font-size:0.95rem;cursor:pointer;transition:var(--transition);text-decoration:none;}
+.cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(99,102,241,0.4);}
+
+/* ===== SECTIONS ===== */
+.section{padding:5rem 2rem;}
+.alt-bg{background:var(--bg-secondary);}
+.container{max-width:1200px;margin:0 auto;}
+.section-title{font-size:2.2rem;font-weight:800;text-align:center;margin-bottom:1rem;}
+.section-intro{text-align:center;color:var(--text-secondary);max-width:800px;margin:0 auto 3rem;font-size:1.05rem;}
+
+/* ===== CARDS ===== */
+.card-grid{display:grid;gap:1.5rem;}
+.two-col{grid-template-columns:repeat(2,1fr);}
+.three-col{grid-template-columns:repeat(3,1fr);}
+.glass-card{background:var(--bg-glass);border:1px solid var(--border-color);border-radius:var(--radius);padding:2rem;backdrop-filter:blur(10px);transition:var(--transition);}
+.glass-card:hover{border-color:var(--accent-1);transform:translateY(-3px);box-shadow:var(--shadow);}
+.card-icon{font-size:2rem;margin-bottom:1rem;}
+.glass-card h3{font-size:1.15rem;font-weight:700;margin-bottom:0.75rem;}
+.glass-card p{color:var(--text-secondary);font-size:0.9rem;}
+
+/* ===== ENCODING DIAGRAM ===== */
+.mapping-showcase{text-align:center;margin:2rem 0;}
+.mapping-showcase h3{font-size:1.3rem;margin-bottom:1.5rem;color:var(--accent-3);}
+.mapping-visual{display:flex;justify-content:center;gap:3rem;flex-wrap:wrap;}
+.mapping-arrow-group{display:flex;align-items:center;gap:0.8rem;}
+.dibit-box{background:var(--bg-secondary);border:2px solid var(--border-color);border-radius:var(--radius-sm);padding:0.6rem 1.2rem;font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:600;}
+.mapping-arrow{font-size:1.5rem;color:var(--text-muted);}
+.nucleotide-box{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:700;color:#fff;}
+.nucleotide-box.adenine{background:var(--nucleotide-adenine);}
+.nucleotide-box.cytosine{background:var(--nucleotide-cytosine);}
+.nucleotide-box.guanine{background:var(--nucleotide-guanine);}
+.nucleotide-box.thymine{background:var(--nucleotide-thymine);}
+.nucleotide-name{font-size:0.75rem;color:var(--text-muted);font-weight:500;}
+.highlight-box{background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(139,92,246,0.1));border:1px solid rgba(99,102,241,0.25);border-radius:var(--radius);padding:2rem;text-align:center;}
+.highlight-box h3{margin-bottom:0.75rem;}
+.highlight-box p{color:var(--text-secondary);font-size:0.95rem;}
+.all-mappings-section{margin-top:3rem;text-align:center;}
+.all-mappings-section h3{margin-bottom:1.5rem;font-size:1.2rem;}
+.mappings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.8rem;max-width:800px;margin:0 auto;}
+.mapping-card{background:var(--bg-glass);border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:0.6rem;font-family:'JetBrains Mono',monospace;font-size:0.7rem;transition:var(--transition);}
+.mapping-card:hover{border-color:var(--accent-1);transform:scale(1.05);}
+.mapping-card .mapping-index{font-weight:700;color:var(--accent-3);margin-bottom:0.3rem;font-size:0.65rem;}
+.mapping-card .mapping-nucleotides{display:flex;justify-content:center;gap:3px;}
+.mapping-card .mini-nt{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;color:#fff;}
+
+/* ===== DATASET ===== */
+.profile-bar{display:flex;height:24px;border-radius:12px;overflow:hidden;margin-top:0.75rem;}
+.profile-segment{transition:var(--transition);position:relative;}
+.profile-segment:hover{opacity:0.8;}
+.curriculum-visual{display:flex;gap:0.5rem;margin-top:1rem;}
+.curriculum-phase{flex:1;padding:0.8rem;border-radius:var(--radius-sm);text-align:center;font-size:0.8rem;}
+.phase-easy{background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);}
+.phase-medium{background:rgba(241,196,15,0.15);border:1px solid rgba(241,196,15,0.3);}
+.phase-hard{background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.3);}
+.phase-label{display:block;font-weight:600;margin-bottom:0.3rem;}
+.phase-desc{color:var(--text-muted);font-size:0.75rem;}
+.setup-list{padding:0;list-style:none;}
+.setup-list li{padding:0.35rem 0;font-size:0.9rem;color:var(--text-secondary);border-bottom:1px solid var(--border-color);}
+.setup-list li:last-child{border:none;}
+
+/* ===== PIPELINE DEMO ===== */
+.pipeline-input-area{background:var(--bg-glass);border:1px solid var(--border-color);border-radius:var(--radius);padding:2rem;margin-bottom:2rem;}
+.pipeline-input-area label{font-weight:600;margin-bottom:0.5rem;display:block;}
+.pipeline-input-area textarea{width:100%;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:1rem;color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-size:0.9rem;resize:vertical;margin-bottom:1rem;}
+.pipeline-input-area textarea:focus{outline:none;border-color:var(--accent-1);}
+.pipeline-controls{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+.pipeline-controls label{font-weight:500;font-size:0.9rem;}
+.pipeline-controls select{background:var(--bg-secondary);border:1px solid var(--border-color);color:var(--text-primary);padding:0.5rem 1rem;border-radius:var(--radius-sm);font-size:0.85rem;}
+
+.pipeline-steps{display:flex;flex-direction:column;gap:1rem;}
+.pipeline-step{background:var(--bg-glass);border:1px solid var(--border-color);border-radius:var(--radius);overflow:hidden;transition:var(--transition);}
+.pipeline-step.active{border-color:var(--accent-1);box-shadow:0 0 20px rgba(99,102,241,0.15);}
+.pipeline-step.completed{border-color:rgba(46,204,113,0.4);}
+.step-header{display:flex;align-items:center;gap:1rem;padding:1rem 1.5rem;cursor:pointer;user-select:none;}
+.step-number{width:36px;height:36px;border-radius:50%;background:var(--bg-secondary);border:2px solid var(--border-color);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;transition:var(--transition);}
+.pipeline-step.active .step-number{background:var(--accent-1);border-color:var(--accent-1);color:#fff;}
+.pipeline-step.completed .step-number{background:#2ecc71;border-color:#2ecc71;color:#fff;}
+.step-header h3{flex:1;font-size:1rem;font-weight:600;}
+.step-status{font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;}
+.pipeline-step.active .step-status{color:var(--accent-3);}
+.pipeline-step.completed .step-status{color:#2ecc71;}
+.step-content{padding:0 1.5rem 1.5rem;display:none;}
+.pipeline-step.active .step-content,.pipeline-step.completed .step-content{display:block;}
+
+/* Binary/Dibit Display */
+.binary-display,.dibit-display{font-family:'JetBrains Mono',monospace;font-size:0.8rem;word-break:break-all;background:var(--bg-secondary);padding:1rem;border-radius:var(--radius-sm);margin-bottom:0.75rem;line-height:1.8;}
+.binary-display .bit-0{color:#64748b;}
+.binary-display .bit-1{color:#a78bfa;}
+.dibit-display .dibit{display:inline-block;padding:2px 4px;margin:2px;border-radius:4px;font-size:0.75rem;}
+.dibit-00{background:rgba(46,204,113,0.2);color:var(--nucleotide-adenine);}
+.dibit-01{background:rgba(52,152,219,0.2);color:var(--nucleotide-cytosine);}
+.dibit-10{background:rgba(241,196,15,0.2);color:var(--nucleotide-guanine);}
+.dibit-11{background:rgba(231,76,60,0.2);color:var(--nucleotide-thymine);}
+
+/* Dibit Chart */
+.dibit-chart{display:flex;align-items:flex-end;gap:1rem;height:120px;padding:1rem;background:var(--bg-secondary);border-radius:var(--radius-sm);}
+.dibit-bar-wrapper{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;}
+.dibit-bar{width:100%;border-radius:4px 4px 0 0;transition:height 0.5s ease;min-height:2px;}
+.dibit-bar-label{font-size:0.7rem;margin-top:0.3rem;font-family:'JetBrains Mono',monospace;color:var(--text-muted);}
+.dibit-bar-value{font-size:0.7rem;font-weight:600;margin-bottom:0.2rem;}
+
+/* DNA Strand */
+.dna-strand{font-family:'JetBrains Mono',monospace;font-size:0.8rem;word-break:break-all;background:var(--bg-secondary);padding:1rem;border-radius:var(--radius-sm);line-height:2;letter-spacing:1px;}
+.dna-strand .nt{display:inline-block;width:18px;height:22px;text-align:center;line-height:22px;border-radius:3px;margin:1px;font-weight:600;font-size:0.75rem;transition:var(--transition);}
+.nt-A{background:rgba(46,204,113,0.25);color:var(--nucleotide-adenine);}
+.nt-C{background:rgba(52,152,219,0.25);color:var(--nucleotide-cytosine);}
+.nt-G{background:rgba(241,196,15,0.25);color:var(--nucleotide-guanine);}
+.nt-T{background:rgba(231,76,60,0.25);color:var(--nucleotide-thymine);}
+.nt-error-substitution{outline:2px solid var(--error-substitution);outline-offset:1px;animation:errorPulse 1s ease-in-out;}
+.nt-error-insertion{outline:2px solid var(--error-insertion);outline-offset:1px;position:relative;}
+.nt-error-deletion{background:rgba(149,165,166,0.3);color:var(--error-deletion);text-decoration:line-through;}
+@keyframes errorPulse{0%,100%{outline-color:var(--error-substitution);}50%{outline-color:transparent;}}
+
+.dna-metrics{display:flex;gap:1.5rem;margin-top:0.75rem;flex-wrap:wrap;}
+.dna-metric{font-size:0.8rem;color:var(--text-secondary);}
+.dna-metric strong{color:var(--text-primary);}
+
+/* Copies Container */
+.copies-container{display:flex;flex-direction:column;gap:0.75rem;}
+.copy-label{font-size:0.8rem;font-weight:600;color:var(--accent-3);margin-bottom:0.25rem;}
+
+/* Voting Display */
+.voting-display{display:flex;flex-direction:column;gap:0.75rem;}
+.vote-row{display:flex;align-items:center;gap:0.5rem;font-family:'JetBrains Mono',monospace;font-size:0.75rem;}
+.vote-label{width:90px;font-weight:600;color:var(--text-muted);font-size:0.7rem;}
+.consensus-label{color:var(--accent-3) !important;}
+.vote-nt{display:inline-block;width:18px;height:22px;text-align:center;line-height:22px;border-radius:3px;margin:1px;font-weight:600;font-size:0.7rem;}
+.vote-winner{outline:2px solid var(--accent-1);outline-offset:1px;}
+
+/* Decode Results */
+.decode-results{display:flex;flex-direction:column;gap:1rem;}
+.decode-text{background:var(--bg-secondary);padding:1rem;border-radius:var(--radius-sm);font-family:'JetBrains Mono',monospace;font-size:0.9rem;}
+.accuracy-comparison{display:flex;gap:2rem;flex-wrap:wrap;}
+.accuracy-card{background:var(--bg-glass);border:1px solid var(--border-color);border-radius:var(--radius-sm);padding:1.5rem;text-align:center;flex:1;min-width:200px;}
+.accuracy-value{font-size:2.5rem;font-weight:800;margin:0.5rem 0;}
+.accuracy-value.good{color:#2ecc71;}
+.accuracy-value.medium{color:#f39c12;}
+.accuracy-value.poor{color:#e74c3c;}
+.accuracy-label{font-size:0.8rem;color:var(--text-muted);}
+
+/* ===== CHARTS ===== */
+.chart-section{background:var(--bg-glass);border:1px solid var(--border-color);border-radius:var(--radius);padding:2rem;margin-bottom:1.5rem;}
+.chart-title{font-size:1.1rem;font-weight:700;margin-bottom:1rem;}
+.chart-subtitle{font-size:0.85rem;font-weight:400;color:var(--text-muted);}
+canvas{width:100% !important;max-width:100%;height:auto !important;}
+
+/* ===== TABLES ===== */
+.table-wrapper{overflow-x:auto;margin-top:2rem;}
+.results-table{width:100%;border-collapse:collapse;background:var(--bg-glass);border-radius:var(--radius);overflow:hidden;font-size:0.85rem;}
+.results-table thead{background:rgba(99,102,241,0.1);}
+.results-table th{padding:0.8rem 1rem;text-align:left;font-weight:600;color:var(--accent-3);border-bottom:2px solid var(--border-color);}
+.results-table td{padding:0.7rem 1rem;border-bottom:1px solid var(--border-color);color:var(--text-secondary);}
+.results-table tbody tr:hover{background:rgba(99,102,241,0.05);}
+
+/* ===== ERROR LAB ===== */
+.lab-controls{display:flex;gap:2rem;flex-wrap:wrap;margin-bottom:2rem;background:var(--bg-glass);border:1px solid var(--border-color);border-radius:var(--radius);padding:2rem;}
+.slider-group{flex:1;min-width:200px;}
+.slider-group label{display:block;font-weight:500;font-size:0.9rem;margin-bottom:0.5rem;}
+.slider-group input[type="range"]{width:100%;accent-color:var(--accent-1);cursor:pointer;}
+.lab-results{display:flex;flex-direction:column;gap:1rem;}
+.lab-dna-display h4{font-size:0.9rem;margin-bottom:0.5rem;color:var(--text-muted);}
+.lab-stats{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:0.5rem;}
+.lab-stat{font-size:0.85rem;color:var(--text-secondary);}
+.lab-stat strong{color:var(--text-primary);}
+
+/* ===== ARCHITECTURE ===== */
+.arch-diagram{display:flex;flex-direction:column;align-items:center;gap:1rem;margin:2rem 0;}
+.arch-layer{background:var(--bg-glass);border:1px solid var(--border-color);border-radius:var(--radius);padding:2rem;width:100%;max-width:700px;position:relative;transition:var(--transition);}
+.arch-layer:hover{border-color:var(--accent-1);}
+.layer-badge{position:absolute;top:-12px;left:24px;background:var(--accent-1);color:#fff;font-size:0.7rem;font-weight:700;padding:0.2rem 0.8rem;border-radius:20px;text-transform:uppercase;letter-spacing:0.05em;}
+.layer-1 .layer-badge{background:linear-gradient(135deg,#6366f1,#8b5cf6);}
+.layer-2 .layer-badge{background:linear-gradient(135deg,#06b6d4,#3b82f6);}
+.layer-3 .layer-badge{background:linear-gradient(135deg,#2ecc71,#27ae60);}
+.arch-layer h3{font-size:1.1rem;margin-bottom:0.5rem;margin-top:0.5rem;}
+.arch-layer p{color:var(--text-secondary);font-size:0.9rem;}
+.arch-arrow{color:var(--text-muted);font-size:0.85rem;padding:0.3rem 0;text-align:center;}
+.arch-details{margin-top:1rem;display:flex;flex-direction:column;gap:0.5rem;}
+.detail-item{display:flex;gap:1rem;font-size:0.85rem;padding:0.4rem 0;border-bottom:1px solid var(--border-color);}
+.detail-label{font-weight:600;color:var(--accent-3);min-width:80px;}
+.detail-value{color:var(--text-secondary);}
+
+/* ===== FOOTER ===== */
+footer{padding:2rem;text-align:center;border-top:1px solid var(--border-color);background:var(--bg-primary);}
+.footer-text{color:var(--text-muted);font-size:0.85rem;}
+
+/* ===== SELECTED MAPPING ===== */
+.selected-mapping{display:flex;flex-direction:column;gap:0.5rem;}
+.selected-mapping .mapping-title{font-weight:700;color:var(--accent-3);margin-bottom:0.5rem;}
+.selected-mapping .mapping-row{display:flex;align-items:center;gap:0.5rem;font-family:'JetBrains Mono',monospace;font-size:0.9rem;}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+    .nav-links{display:none;}
+    .nav-toggle{display:block;}
+    .two-col,.three-col{grid-template-columns:1fr;}
+    .mapping-visual{flex-direction:column;align-items:center;gap:1.5rem;}
+    .hero-stats{flex-direction:column;align-items:center;}
+    .lab-controls{flex-direction:column;}
+    .accuracy-comparison{flex-direction:column;}
+    .pipeline-controls{flex-direction:column;align-items:stretch;}
+}
