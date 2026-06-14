@@ -10,6 +10,13 @@
 // ============================================================
 // ENCODING CONSTANTS
 // ============================================================
+const password = prompt("Enter password:");
+
+if (password !== "VITCHENNAI") {
+    document.body.innerHTML = "<h1>Access Denied</h1>";
+}
+
+
 
 const NUCLEOTIDES = ["A", "C", "G", "T"];
 const DIBITS = [[0,0], [0,1], [1,0], [1,1]];
