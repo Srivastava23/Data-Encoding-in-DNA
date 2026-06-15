@@ -547,6 +547,28 @@ async function runPipeline() {
     const improvement = multiCopyAccuracy - averageSingleAccuracy;
 
     const decodeResults = document.getElementById("decode-results");
+    // Highlight mismatched characters
+    function highlightMismatches(original, decoded) {
+        let result = "";
+        const maxLen = Math.max(original.length, decoded.length);
+        for (let i = 0; i < maxLen; i++) {
+            const origChar = original[i] || "";
+            const decChar = decoded[i] || "";
+            if (origChar !== decChar) {
+                // If it's a non-matching character, highlight it
+                // Handle cases where the decoded string is longer or shorter (though with fixed length this shouldn't happen much)
+                const displayChar = decChar === "" ? "&empty;" : escapeHTML(decChar);
+                result += `<span class="mismatch-highlight">${displayChar}</span>`;
+            } else {
+                result += escapeHTML(decChar);
+            }
+        }
+        return result;
+    }
+
+    const singleCopyHighlighted = highlightMismatches(inputText, singleCopyDecodedText);
+    const multiCopyHighlighted = highlightMismatches(inputText, decodedText);
+
     decodeResults.innerHTML = `
         <div style="margin-bottom:1rem;">
             <strong>Original Text:</strong>
@@ -554,11 +576,11 @@ async function runPipeline() {
         </div>
         <div style="margin-bottom:1rem;">
             <strong>Single Copy Decoded (copy 1):</strong>
-            <div class="decode-text" style="border-left:3px solid var(--error-substitution);">${escapeHTML(singleCopyDecodedText)}</div>
+            <div class="decode-text" style="border-left:3px solid var(--error-substitution);">${singleCopyHighlighted}</div>
         </div>
         <div style="margin-bottom:1rem;">
             <strong>Multi-Copy Consensus Decoded (${numberOfCopies} copies):</strong>
-            <div class="decode-text" style="border-left:3px solid #2ecc71;">${escapeHTML(decodedText)}</div>
+            <div class="decode-text" style="border-left:3px solid #2ecc71;">${multiCopyHighlighted}</div>
         </div>
         <div class="accuracy-comparison">
             <div class="accuracy-card">

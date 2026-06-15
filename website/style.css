@@ -268,6 +268,8 @@ footer{padding:2rem;text-align:center;border-top:1px solid var(--border-color);b
 .finding-highlight .big-stat{font-size:4rem;font-weight:900;background:linear-gradient(135deg,#2ecc71,#27ae60);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
 .finding-highlight .big-label{font-size:1.1rem;color:var(--text-secondary);margin-top:0.5rem;}
 
+.mismatch-highlight{color:#e74c3c;font-weight:bold;}
+
 /* ===== RESPONSIVE ===== */
 @media(max-width:768px){
     .nav-links{display:none;}
