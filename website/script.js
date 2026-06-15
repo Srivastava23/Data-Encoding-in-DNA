@@ -10,14 +10,6 @@
 // ============================================================
 // ENCODING CONSTANTS
 // ============================================================
-const password = prompt("Enter password:");
-
-if (password !== "VITCHENNAI") {
-    document.body.innerHTML = "<h1>Access Denied</h1>";
-}
-
-
-
 const NUCLEOTIDES = ["A", "C", "G", "T"];
 const DIBITS = [[0,0], [0,1], [1,0], [1,1]];
 const DIBIT_LABELS = ["00", "01", "10", "11"];
@@ -66,6 +58,9 @@ async function loadDemoData() {
             renderTrainingCharts();
             renderResultsCharts();
             renderResultsTable();
+            renderGeneralisationTest();
+            renderRedundancyAnalysisChart();
+            renderAblationChart();
         }
     } catch (error) {
         console.log("No demo_data.json found. Running in standalone mode.");
@@ -929,40 +924,65 @@ function drawBarChart(canvasId, groups, options = {}) {
 function renderTrainingCharts() {
     if (!demoData || !demoData.training_curves) return;
 
-    // Find the first predictive result
-    let trainingData = null;
+    const seedColours = {
+        reinforcement_learning: ["#6366f1", "#818cf8", "#a5b4fc"],
+        predictive: ["#2ecc71", "#58d68d", "#82e0aa"],
+    };
+
+    // Build multi-seed reward overlay
+    const rewardDatasets = [];
+    const validationDatasets = [];
+    const predictorDatasets = [];
+    let bestPredictive = null;
+
     for (const [key, data] of Object.entries(demoData.training_curves)) {
-        if (key.includes("predictive")) {
-            trainingData = data;
-            break;
+        const rolling = data.rolling_rewards || [];
+        const isPredictive = key.includes("predictive");
+        const palette = isPredictive ? seedColours.predictive : seedColours.reinforcement_learning;
+        const seedNumber = parseInt(key.match(/seed_(\d+)/)?.[1] || "0");
+        const colourIndex = Math.min((seedNumber - 42) % 3, palette.length - 1);
+        const typeLabel = isPredictive ? "Predictive" : "Reinforcement Learning";
+
+        rewardDatasets.push({
+            data: rolling,
+            colour: palette[colourIndex >= 0 ? colourIndex : 0],
+            lineWidth: isPredictive ? 2 : 1.5,
+            alpha: isPredictive ? 1 : 0.6,
+            label: `${typeLabel} (Seed ${seedNumber})`,
+        });
+
+        if (data.validation_rewards && data.validation_rewards.length > 0) {
+            validationDatasets.push({
+                data: data.validation_rewards,
+                colour: palette[colourIndex >= 0 ? colourIndex : 0],
+                lineWidth: 1.5,
+                label: `${typeLabel} (Seed ${seedNumber})`,
+            });
+        }
+
+        if (isPredictive && data.predictor_losses && data.predictor_losses.length > 0) {
+            predictorDatasets.push({
+                data: data.predictor_losses,
+                colour: palette[colourIndex >= 0 ? colourIndex : 0],
+                lineWidth: 1.5,
+                label: `Seed ${seedNumber}`,
+            });
+            if (!bestPredictive) bestPredictive = data;
         }
     }
-    if (!trainingData) {
-        trainingData = Object.values(demoData.training_curves)[0];
-    }
-    if (!trainingData) return;
 
-    // Reward chart
-    const rollingRewards = trainingData.rolling_rewards || [];
-    drawLineChart("training-reward-chart", [
-        { data: rollingRewards, colour: "#8b5cf6", lineWidth: 2, label: "Rolling Reward" },
-    ], { xLabel: "Epoch", height: 300 });
+    if (!bestPredictive) bestPredictive = Object.values(demoData.training_curves)[0];
 
-    // Validation reward
-    drawLineChart("validation-reward-chart", [
-        { data: trainingData.validation_rewards || [], colour: "#e74c3c", lineWidth: 2, label: "Validation" },
-    ], { xLabel: "Validation Step", height: 220 });
-
-    // Predictor loss
-    drawLineChart("predictor-loss-chart", [
-        { data: trainingData.predictor_losses || [], colour: "#f39c12", lineWidth: 2, label: "Predictor Loss" },
-    ], { xLabel: "Training Step", height: 220 });
+    drawLineChart("training-reward-chart", rewardDatasets, { xLabel: "Epoch", height: 300 });
+    drawLineChart("validation-reward-chart", validationDatasets, { xLabel: "Validation Step", height: 220 });
+    drawLineChart("predictor-loss-chart", predictorDatasets, { xLabel: "Training Step", height: 220 });
 
     // Training info cards
     const infoContainer = document.getElementById("training-info-cards");
-    if (infoContainer) {
-        const finalEpoch = trainingData.final_epoch || 0;
-        const stoppedEarly = trainingData.stopped_early || false;
+    if (infoContainer && bestPredictive) {
+        const finalEpoch = bestPredictive.final_epoch || 0;
+        const stoppedEarly = bestPredictive.stopped_early || false;
+        const totalTime = demoData.metadata ? demoData.metadata.total_training_time_minutes : 0;
         infoContainer.innerHTML = `
             <div class="glass-card" style="text-align:center;">
                 <div class="card-icon">🎯</div>
@@ -972,12 +992,12 @@ function renderTrainingCharts() {
             <div class="glass-card" style="text-align:center;">
                 <div class="card-icon">🛑</div>
                 <h3>Early Stopping</h3>
-                <p style="font-size:2rem;font-weight:800;color:${stoppedEarly ? '#2ecc71' : '#e74c3c'};">${stoppedEarly ? 'Yes' : 'No'}</p>
+                <p style="font-size:2rem;font-weight:800;color:${stoppedEarly ? '#2ecc71' : '#e74c3c'};">${stoppedEarly ? 'Triggered' : 'Not triggered'}</p>
             </div>
             <div class="glass-card" style="text-align:center;">
-                <div class="card-icon">📊</div>
-                <h3>Validation Points</h3>
-                <p style="font-size:2rem;font-weight:800;color:var(--accent-3);">${(trainingData.validation_rewards || []).length}</p>
+                <div class="card-icon">⏱️</div>
+                <h3>Total Training Time</h3>
+                <p style="font-size:2rem;font-weight:800;color:var(--accent-3);">${totalTime} min</p>
             </div>
         `;
     }
@@ -1002,8 +1022,8 @@ function renderResultsCharts() {
         "baseline": "Baseline",
         "random": "Random",
         "reinforcement_learning": "Reinforcement Learning",
-        "predictive_reinforcement_learning": "Predictive RL",
-        "predictive_reinforcement_learning_redundancy": "Predictive RL + Redundancy",
+        "predictive_reinforcement_learning": "Predictive Reinforcement Learning",
+        "predictive_reinforcement_learning_redundancy": "Predictive Reinforcement Learning + Redundancy",
     };
 
     const sequenceLengths = [...new Set(stats.map(s => s.seq_length))].sort((a,b) => a - b);
@@ -1050,9 +1070,9 @@ function renderResultsTable() {
     const methodLabels = {
         "baseline": "Fixed Baseline",
         "random": "Random Mapping",
-        "reinforcement_learning": "Reinforcement Learning (PPO)",
+        "reinforcement_learning": "Reinforcement Learning (Proximal Policy Optimisation)",
         "predictive_reinforcement_learning": "Predictive Reinforcement Learning",
-        "predictive_reinforcement_learning_redundancy": "Predictive RL + Redundancy",
+        "predictive_reinforcement_learning_redundancy": "Predictive Reinforcement Learning + Redundancy",
     };
 
     tbody.innerHTML = "";
@@ -1067,6 +1087,125 @@ function renderResultsTable() {
         `;
         tbody.appendChild(row);
     }
+}
+
+// ============================================================
+// GENERALISATION TEST
+// ============================================================
+
+function renderGeneralisationTest() {
+    if (!demoData || !demoData.unseen_test_results || !demoData.main_results) return;
+    const container = document.getElementById("generalisation-grid");
+    if (!container) return;
+    container.innerHTML = "";
+
+    const sequenceLengths = Object.keys(demoData.unseen_test_results).sort((a, b) => parseInt(a) - parseInt(b));
+
+    for (const lengthKey of sequenceLengths) {
+        const testData = demoData.unseen_test_results[lengthKey];
+        const testAccuracy = testData.decode_accuracy;
+
+        // Find matching training accuracy (predictive reinforcement learning method)
+        const trainStat = demoData.main_results.find(
+            s => s.method === "predictive_reinforcement_learning" && s.seq_length === parseInt(lengthKey)
+        );
+        const trainAccuracy = trainStat ? trainStat.decode_accuracy_mean : testAccuracy;
+        const gap = Math.abs(trainAccuracy - testAccuracy);
+        const isPass = gap < 5;
+
+        const card = document.createElement("div");
+        card.className = "generalisation-card";
+        card.innerHTML = `
+            <div class="length-badge">Length ${lengthKey}</div>
+            <div class="metric-pair">
+                <div class="metric-item">
+                    <div class="metric-value" style="color:var(--accent-3);">${trainAccuracy.toFixed(1)}%</div>
+                    <div class="metric-label">Training Accuracy</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value" style="color:#2ecc71;">${testAccuracy.toFixed(1)}%</div>
+                    <div class="metric-label">Test Accuracy (Unseen)</div>
+                </div>
+            </div>
+            <div class="gap-indicator ${isPass ? 'pass' : 'warn'}">
+                ${isPass ? '✓' : '⚠'} Gap: ${gap.toFixed(2)}%
+            </div>
+        `;
+        container.appendChild(card);
+    }
+}
+
+// ============================================================
+// REDUNDANCY ANALYSIS CHART
+// ============================================================
+
+function renderRedundancyAnalysisChart() {
+    if (!demoData || !demoData.redundancy_comparison) return;
+
+    const comparison = demoData.redundancy_comparison;
+    const sequenceLengths = Object.keys(comparison).sort((a, b) => parseInt(a) - parseInt(b));
+    const copyColours = ["#e74c3c", "#f39c12", "#2ecc71", "#3498db", "#9b59b6"];
+
+    // Build grouped bar data: groups = copy counts, bars = sequence lengths
+    const copyCountsToShow = [1, 2, 3, 4, 5];
+    const groups = copyCountsToShow.map((copyCount, index) => ({
+        label: `${copyCount} ${copyCount === 1 ? 'Copy' : 'Copies'}`,
+        bars: sequenceLengths.map(lengthKey => {
+            const entry = comparison[lengthKey].find(c => c.number_of_copies === copyCount);
+            return {
+                value: entry ? entry.redundancy_accuracy * 100 : 0,
+                colour: {
+                    "64": "#6366f1",
+                    "128": "#06b6d4",
+                    "256": "#f59e0b",
+                }[lengthKey] || "#95a5a6",
+                label: `Length ${lengthKey}`,
+            };
+        }),
+    }));
+
+    drawBarChart("redundancy-analysis-chart", groups, { precision: 1, height: 300 });
+}
+
+// ============================================================
+// ABLATION CHART
+// ============================================================
+
+function renderAblationChart() {
+    if (!demoData || !demoData.ablation_results) return;
+
+    const stats = demoData.ablation_results;
+    const methodColours = {
+        "baseline": "#e74c3c",
+        "reinforcement_learning": "#3498db",
+        "predictive_reinforcement_learning": "#2ecc71",
+        "reinforcement_learning_no_gc": "#f39c12",
+        "reinforcement_learning_no_homopolymer": "#9b59b6",
+    };
+    const methodLabels = {
+        "baseline": "Fixed Baseline",
+        "reinforcement_learning": "Full Model",
+        "predictive_reinforcement_learning": "Predictive Reinforcement Learning",
+        "reinforcement_learning_no_gc": "Without GC Reward",
+        "reinforcement_learning_no_homopolymer": "Without Homopolymer Penalty",
+    };
+
+    const sequenceLengths = [...new Set(stats.map(s => s.seq_length))].sort((a, b) => a - b);
+    const methods = [...new Set(stats.map(s => s.method))];
+
+    const groups = sequenceLengths.map(sequenceLength => ({
+        label: `Length ${sequenceLength}`,
+        bars: methods.map(method => {
+            const entry = stats.find(s => s.method === method && s.seq_length === sequenceLength);
+            return {
+                value: entry ? (entry.average_error_rate_mean || 0) : 0,
+                colour: methodColours[method] || "#95a5a6",
+                label: methodLabels[method] || method,
+            };
+        }),
+    }));
+
+    drawBarChart("ablation-chart", groups, { precision: 4, height: 300 });
 }
 
 // ============================================================

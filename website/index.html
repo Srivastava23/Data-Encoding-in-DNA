@@ -25,6 +25,9 @@
         <li><a href="#pipeline-demo">Pipeline</a></li>
         <li><a href="#training-results">Training</a></li>
         <li><a href="#error-laboratory">Error Lab</a></li>
+        <li><a href="#generalisation-test">Generalisation</a></li>
+        <li><a href="#redundancy-analysis">Redundancy</a></li>
+        <li><a href="#ablation-study">Ablation</a></li>
         <li><a href="#results">Results</a></li>
         <li><a href="#architecture">Architecture</a></li>
     </ul>
@@ -44,6 +47,10 @@
             to reduce sequencing errors and improve decoding accuracy for DNA-based archival storage.
         </p>
         <div class="hero-stats">
+            <div class="stat-pill">
+                <span class="stat-value">100%</span>
+                <span class="stat-label">Accuracy (5 Copies)</span>
+            </div>
             <div class="stat-pill">
                 <span class="stat-value">100,000</span>
                 <span class="stat-label">Training Epochs</span>
@@ -397,6 +404,55 @@
     </div>
 </section>
 
+<!-- Generalisation Test -->
+<section id="generalisation-test" class="section alt-bg">
+    <div class="container">
+        <h2 class="section-title">Generalisation Test (Unseen Data)</h2>
+        <p class="section-intro">
+            The trained model was evaluated on completely unseen binary data to confirm it does not overfit.
+            A small gap between training and test accuracy indicates strong generalisation.
+        </p>
+        <div class="generalisation-grid" id="generalisation-grid">
+            <!-- Populated by JavaScript -->
+        </div>
+    </div>
+</section>
+
+<!-- Multi-Copy Redundancy Analysis -->
+<section id="redundancy-analysis" class="section">
+    <div class="container">
+        <h2 class="section-title">Multi-Copy Redundancy Analysis</h2>
+        <p class="section-intro">
+            Storing multiple copies of the same DNA-encoded data and using majority voting during retrieval
+            dramatically reduces decoding errors. Below: accuracy across 1 to 5 copies for each sequence length.
+        </p>
+        <div class="chart-section">
+            <h3 class="chart-title">Decode Accuracy by Number of Copies <span class="chart-subtitle">(higher is better)</span></h3>
+            <canvas id="redundancy-analysis-chart" width="900" height="350"></canvas>
+        </div>
+        <div class="finding-highlight">
+            <div class="big-stat">100%</div>
+            <div class="big-label">Decode accuracy achieved with 5 redundant copies on short sequences — zero data loss.</div>
+        </div>
+    </div>
+</section>
+
+<!-- Ablation Study -->
+<section id="ablation-study" class="section alt-bg">
+    <div class="container">
+        <h2 class="section-title">Ablation Study</h2>
+        <p class="section-intro">
+            To measure the contribution of each reward component, we trained ablated agents
+            with individual components removed: one without the GC content bonus,
+            and another without the homopolymer penalty.
+        </p>
+        <div class="chart-section">
+            <h3 class="chart-title">Ablation: Error Rate Comparison <span class="chart-subtitle">(lower is better)</span></h3>
+            <canvas id="ablation-chart" width="900" height="350"></canvas>
+        </div>
+    </div>
+</section>
+
 <!-- Results Dashboard -->
 <section id="results" class="section alt-bg">
     <div class="container">
@@ -445,7 +501,7 @@
         <div class="arch-diagram">
             <div class="arch-layer layer-1">
                 <div class="layer-badge">Layer 1</div>
-                <h3>Reinforcement Learning Encoding Agent (PPO)</h3>
+                <h3>Reinforcement Learning Encoding Agent (Proximal Policy Optimisation)</h3>
                 <p>A Proximal Policy Optimization agent with a shared Actor-Critic neural network.</p>
                 <div class="arch-details">
                     <div class="detail-item">
