@@ -93,12 +93,50 @@ function binaryToText(binaryBits) {
         for (let bitPosition = 0; bitPosition < 8 && index + bitPosition < binaryBits.length; bitPosition++) {
             characterCode = (characterCode << 1) | binaryBits[index + bitPosition];
         }
-        if (characterCode > 0 && characterCode < 128) {
+        if (characterCode > 31 && characterCode < 127) {
             characters.push(String.fromCharCode(characterCode));
+        } else {
+            // Keep a visible placeholder so character positions stay aligned
+            characters.push("\u00B7");
         }
     }
     return characters.join("");
 }
+
+// ============================================================
+// BINARY <-> BYTES CONVERSION (for images)
+// ============================================================
+
+function bytesToBinary(uint8Array) {
+    const binaryBits = [];
+    for (let byteIndex = 0; byteIndex < uint8Array.length; byteIndex++) {
+        const byte = uint8Array[byteIndex];
+        for (let bitPosition = 7; bitPosition >= 0; bitPosition--) {
+            binaryBits.push((byte >> bitPosition) & 1);
+        }
+    }
+    while (binaryBits.length % 2 !== 0) {
+        binaryBits.push(0);
+    }
+    return binaryBits;
+}
+
+function binaryToBytes(binaryBits, originalLength) {
+    const bytes = new Uint8Array(originalLength);
+    for (let index = 0; index < originalLength; index++) {
+        let byteValue = 0;
+        const bitStart = index * 8;
+        for (let bitPosition = 0; bitPosition < 8 && bitStart + bitPosition < binaryBits.length; bitPosition++) {
+            byteValue = (byteValue << 1) | binaryBits[bitStart + bitPosition];
+        }
+        bytes[index] = byteValue;
+    }
+    return bytes;
+}
+
+// Track current input mode
+let currentInputMode = "text";
+let currentImageData = null;  // { bytes: Uint8Array, mimeType: string, originalDataUrl: string }
 
 function binaryToDibits(binaryBits) {
     const dibits = [];
@@ -364,11 +402,23 @@ async function runPipeline() {
     if (pipelineRunning) return;
     pipelineRunning = true;
 
-    const inputText = document.getElementById("demo-text-input").value.trim();
-    if (!inputText) {
-        alert("Please enter some text to encode.");
-        pipelineRunning = false;
-        return;
+    // Determine input mode
+    let inputText = "";
+    let binaryBits = [];
+    let originalByteLength = 0;
+    const isImageMode = currentInputMode === "image" && currentImageData;
+
+    if (isImageMode) {
+        binaryBits = bytesToBinary(currentImageData.bytes);
+        originalByteLength = currentImageData.bytes.length;
+    } else {
+        inputText = document.getElementById("demo-text-input").value.trim();
+        if (!inputText) {
+            alert("Please enter some text to encode.");
+            pipelineRunning = false;
+            return;
+        }
+        binaryBits = textToBinary(inputText);
     }
 
     const numberOfCopies = parseInt(document.getElementById("copy-count-select").value);
@@ -381,18 +431,21 @@ async function runPipeline() {
 
     // === Step 1: Binary Conversion ===
     await activateStep("step-binary", "Processing");
-    const binaryBits = textToBinary(inputText);
     const dibits = binaryToDibits(binaryBits);
 
-    // Render binary
+    // Render binary (show first 512 bits max for readability)
     const binaryDisplay = document.getElementById("binary-display");
-    binaryDisplay.innerHTML = "<strong>Binary:</strong> " +
-        binaryBits.map(bit => `<span class="bit-${bit}">${bit}</span>`).join("");
+    const displayBits = binaryBits.slice(0, 512);
+    binaryDisplay.innerHTML = "<strong>Binary" + (isImageMode ? " (image bytes)" : "") + ":</strong> " +
+        displayBits.map(bit => `<span class="bit-${bit}">${bit}</span>`).join("") +
+        (binaryBits.length > 512 ? `<span style="color:var(--text-muted)"> ... (${binaryBits.length} total bits)</span>` : "");
 
     // Render dibits
     const dibitDisplay = document.getElementById("dibit-display");
+    const displayDibits = dibits.slice(0, 256);
     dibitDisplay.innerHTML = "<strong>Dibits:</strong> " +
-        dibits.map(dibit => `<span class="dibit dibit-${dibit}">${dibit}</span>`).join(" ");
+        displayDibits.map(dibit => `<span class="dibit dibit-${dibit}">${dibit}</span>`).join(" ") +
+        (dibits.length > 256 ? `<span style="color:var(--text-muted)"> ... (${dibits.length} total)</span>` : "");
 
     await delay(600);
     completeStep("step-binary");
@@ -423,6 +476,7 @@ async function runPipeline() {
         <span class="dna-metric"><strong>Length:</strong> ${dnaSequence.length} nucleotides</span>
         <span class="dna-metric"><strong>GC Content:</strong> ${(gcValue * 100).toFixed(1)}%</span>
         <span class="dna-metric"><strong>Max Homopolymer:</strong> ${maxHomopolymerValue}</span>
+        ${isImageMode ? `<span class="dna-metric"><strong>Image Size:</strong> ${(originalByteLength / 1024).toFixed(1)} KB</span>` : ""}
     `;
     await delay(600);
     completeStep("step-dna");
@@ -444,16 +498,12 @@ async function runPipeline() {
     completeStep("step-copies");
 
     // === Step 6: Error Simulation ===
-    // NOTE: The pipeline demo uses substitution-only errors because
-    // insertions and deletions shift nucleotide positions, which breaks
-    // position-wise majority voting. The Error Laboratory section below
-    // lets you experiment with all three error types independently.
     await activateStep("step-errors", "Simulating Errors");
     const mutatedCopies = [];
     const errorCopiesContainer = document.getElementById("error-copies");
     errorCopiesContainer.innerHTML = "";
 
-    const DEMO_SUBSTITUTION_RATE = 0.04;  // 4% substitution rate (no indels)
+    const DEMO_SUBSTITUTION_RATE = 0.04;
 
     for (let copyIndex = 0; copyIndex < numberOfCopies; copyIndex++) {
         const { mutatedSequence, statistics, errorDetails } = simulateErrors(
@@ -481,7 +531,6 @@ async function runPipeline() {
     const votingDisplay = document.getElementById("voting-display");
     votingDisplay.innerHTML = "";
 
-    // Show each copy + consensus (limited to first 60 positions)
     const displayLength = Math.min(60, consensusSequence.length);
     for (let copyIndex = 0; copyIndex < numberOfCopies; copyIndex++) {
         const row = document.createElement("div");
@@ -497,7 +546,6 @@ async function runPipeline() {
         votingDisplay.appendChild(row);
     }
 
-    // Consensus row
     const consensusRow = document.createElement("div");
     consensusRow.className = "vote-row";
     consensusRow.innerHTML = `<span class="vote-label consensus-label">Consensus</span>`;
@@ -524,13 +572,11 @@ async function runPipeline() {
     await activateStep("step-decode", "Decoding");
     const decodedDibits = decodeNucleotidesToDibits(consensusSequence, selectedMapping);
     const decodedBits = dibitsToIntegers(decodedDibits);
-    const decodedText = binaryToText(decodedBits);
 
-    // Single copy accuracy: average across ALL copies (fairer comparison)
+    // Single copy accuracy
     let totalSingleAccuracy = 0;
     let worstSingleAccuracy = 100;
     let bestSingleAccuracy = 0;
-    let singleCopyDecodedText = "";
     for (let copyIndex = 0; copyIndex < numberOfCopies; copyIndex++) {
         const copyDibits = decodeNucleotidesToDibits(mutatedCopies[copyIndex], selectedMapping);
         const copyBits = dibitsToIntegers(copyDibits);
@@ -538,16 +584,14 @@ async function runPipeline() {
         totalSingleAccuracy += copyAccuracy;
         if (copyAccuracy < worstSingleAccuracy) worstSingleAccuracy = copyAccuracy;
         if (copyAccuracy > bestSingleAccuracy) bestSingleAccuracy = copyAccuracy;
-        if (copyIndex === 0) singleCopyDecodedText = binaryToText(copyBits);
     }
     const averageSingleAccuracy = totalSingleAccuracy / numberOfCopies;
-
-    // Multi-copy accuracy (consensus)
     const multiCopyAccuracy = computeBitAccuracy(binaryBits, decodedBits) * 100;
     const improvement = multiCopyAccuracy - averageSingleAccuracy;
 
     const decodeResults = document.getElementById("decode-results");
-    // Highlight mismatched characters
+
+    // Highlight mismatched characters (text mode only)
     function highlightMismatches(original, decoded) {
         let result = "";
         const maxLen = Math.max(original.length, decoded.length);
@@ -555,8 +599,6 @@ async function runPipeline() {
             const origChar = original[i] || "";
             const decChar = decoded[i] || "";
             if (origChar !== decChar) {
-                // If it's a non-matching character, highlight it
-                // Handle cases where the decoded string is longer or shorter (though with fixed length this shouldn't happen much)
                 const displayChar = decChar === "" ? "&empty;" : escapeHTML(decChar);
                 result += `<span class="mismatch-highlight">${displayChar}</span>`;
             } else {
@@ -566,41 +608,100 @@ async function runPipeline() {
         return result;
     }
 
-    const singleCopyHighlighted = highlightMismatches(inputText, singleCopyDecodedText);
-    const multiCopyHighlighted = highlightMismatches(inputText, decodedText);
+    let outputHTML = "";
 
-    decodeResults.innerHTML = `
-        <div style="margin-bottom:1rem;">
-            <strong>Original Text:</strong>
-            <div class="decode-text" style="opacity:0.6;">${escapeHTML(inputText)}</div>
-        </div>
-        <div style="margin-bottom:1rem;">
-            <strong>Single Copy Decoded (copy 1):</strong>
-            <div class="decode-text" style="border-left:3px solid var(--error-substitution);">${singleCopyHighlighted}</div>
-        </div>
-        <div style="margin-bottom:1rem;">
-            <strong>Multi-Copy Consensus Decoded (${numberOfCopies} copies):</strong>
-            <div class="decode-text" style="border-left:3px solid #2ecc71;">${multiCopyHighlighted}</div>
-        </div>
-        <div class="accuracy-comparison">
-            <div class="accuracy-card">
-                <div class="accuracy-label">Average Single Copy</div>
-                <div class="accuracy-value ${averageSingleAccuracy > 90 ? 'good' : averageSingleAccuracy > 70 ? 'medium' : 'poor'}">${averageSingleAccuracy.toFixed(1)}%</div>
-                <div class="accuracy-label">Without redundancy (best: ${bestSingleAccuracy.toFixed(1)}%, worst: ${worstSingleAccuracy.toFixed(1)}%)</div>
-            </div>
-            <div class="accuracy-card">
-                <div class="accuracy-label">Multi-Copy Consensus (${numberOfCopies} copies)</div>
-                <div class="accuracy-value ${multiCopyAccuracy > 90 ? 'good' : multiCopyAccuracy > 70 ? 'medium' : 'poor'}">${multiCopyAccuracy.toFixed(1)}%</div>
-                <div class="accuracy-label">With majority voting</div>
-            </div>
-            <div class="accuracy-card">
-                <div class="accuracy-label">Improvement</div>
-                <div class="accuracy-value ${improvement >= 0 ? 'good' : 'poor'}">${improvement >= 0 ? '+' : ''}${improvement.toFixed(1)}%</div>
-                <div class="accuracy-label">From redundancy</div>
-            </div>
-        </div>
-    `;
+    if (isImageMode) {
+        // === IMAGE MODE OUTPUT ===
+        const singleCopyDibits = decodeNucleotidesToDibits(mutatedCopies[0], selectedMapping);
+        const singleCopyBits = dibitsToIntegers(singleCopyDibits);
+        const singleCopyBytes = binaryToBytes(singleCopyBits, originalByteLength);
+        const singleCopyBlob = new Blob([singleCopyBytes], { type: currentImageData.mimeType });
+        const singleCopyUrl = URL.createObjectURL(singleCopyBlob);
 
+        const decodedBytes = binaryToBytes(decodedBits, originalByteLength);
+        const decodedBlob = new Blob([decodedBytes], { type: currentImageData.mimeType });
+        const decodedUrl = URL.createObjectURL(decodedBlob);
+
+        const singleCopyAccuracyValue = computeBitAccuracy(binaryBits, singleCopyBits) * 100;
+
+        outputHTML = `
+            <div class="image-comparison-grid">
+                <div class="image-compare-card">
+                    <h4>Original Image</h4>
+                    <img src="${currentImageData.originalDataUrl}" alt="Original" class="pipeline-image" />
+                </div>
+                <div class="image-compare-card">
+                    <h4>Single Copy Decoded (copy 1)</h4>
+                    <img src="${singleCopyUrl}" alt="Single copy decoded" class="pipeline-image" />
+                    <div class="accuracy-value ${singleCopyAccuracyValue > 90 ? 'good' : singleCopyAccuracyValue > 70 ? 'medium' : 'poor'}">${singleCopyAccuracyValue.toFixed(1)}% bit accuracy</div>
+                </div>
+                <div class="image-compare-card">
+                    <h4>Multi-Copy Consensus (${numberOfCopies} copies)</h4>
+                    <img src="${decodedUrl}" alt="Consensus decoded" class="pipeline-image" />
+                    <div class="accuracy-value ${multiCopyAccuracy > 90 ? 'good' : multiCopyAccuracy > 70 ? 'medium' : 'poor'}">${multiCopyAccuracy.toFixed(1)}% bit accuracy</div>
+                </div>
+            </div>
+            <div class="accuracy-comparison">
+                <div class="accuracy-card">
+                    <div class="accuracy-label">Average Single Copy</div>
+                    <div class="accuracy-value ${averageSingleAccuracy > 90 ? 'good' : averageSingleAccuracy > 70 ? 'medium' : 'poor'}">${averageSingleAccuracy.toFixed(1)}%</div>
+                    <div class="accuracy-label">Without redundancy</div>
+                </div>
+                <div class="accuracy-card">
+                    <div class="accuracy-label">Multi-Copy Consensus (${numberOfCopies} copies)</div>
+                    <div class="accuracy-value ${multiCopyAccuracy > 90 ? 'good' : multiCopyAccuracy > 70 ? 'medium' : 'poor'}">${multiCopyAccuracy.toFixed(1)}%</div>
+                    <div class="accuracy-label">With majority voting</div>
+                </div>
+                <div class="accuracy-card">
+                    <div class="accuracy-label">Improvement</div>
+                    <div class="accuracy-value ${improvement >= 0 ? 'good' : 'poor'}">${improvement >= 0 ? '+' : ''}${improvement.toFixed(1)}%</div>
+                    <div class="accuracy-label">From redundancy</div>
+                </div>
+            </div>
+        `;
+    } else {
+        // === TEXT MODE OUTPUT ===
+        const singleCopyDibits = decodeNucleotidesToDibits(mutatedCopies[0], selectedMapping);
+        const singleCopyBits = dibitsToIntegers(singleCopyDibits);
+        const singleCopyDecodedText = binaryToText(singleCopyBits);
+        const decodedText = binaryToText(decodedBits);
+        const singleCopyHighlighted = highlightMismatches(inputText, singleCopyDecodedText);
+        const multiCopyHighlighted = highlightMismatches(inputText, decodedText);
+
+        outputHTML = `
+            <div style="margin-bottom:1rem;">
+                <strong>Original Text:</strong>
+                <div class="decode-text" style="opacity:0.6;">${escapeHTML(inputText)}</div>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <strong>Single Copy Decoded (copy 1):</strong>
+                <div class="decode-text" style="border-left:3px solid var(--error-substitution);">${singleCopyHighlighted}</div>
+            </div>
+            <div style="margin-bottom:1rem;">
+                <strong>Multi-Copy Consensus Decoded (${numberOfCopies} copies):</strong>
+                <div class="decode-text" style="border-left:3px solid #2ecc71;">${multiCopyHighlighted}</div>
+            </div>
+            <div class="accuracy-comparison">
+                <div class="accuracy-card">
+                    <div class="accuracy-label">Average Single Copy</div>
+                    <div class="accuracy-value ${averageSingleAccuracy > 90 ? 'good' : averageSingleAccuracy > 70 ? 'medium' : 'poor'}">${averageSingleAccuracy.toFixed(1)}%</div>
+                    <div class="accuracy-label">Without redundancy (best: ${bestSingleAccuracy.toFixed(1)}%, worst: ${worstSingleAccuracy.toFixed(1)}%)</div>
+                </div>
+                <div class="accuracy-card">
+                    <div class="accuracy-label">Multi-Copy Consensus (${numberOfCopies} copies)</div>
+                    <div class="accuracy-value ${multiCopyAccuracy > 90 ? 'good' : multiCopyAccuracy > 70 ? 'medium' : 'poor'}">${multiCopyAccuracy.toFixed(1)}%</div>
+                    <div class="accuracy-label">With majority voting</div>
+                </div>
+                <div class="accuracy-card">
+                    <div class="accuracy-label">Improvement</div>
+                    <div class="accuracy-value ${improvement >= 0 ? 'good' : 'poor'}">${improvement >= 0 ? '+' : ''}${improvement.toFixed(1)}%</div>
+                    <div class="accuracy-label">From redundancy</div>
+                </div>
+            </div>
+        `;
+    }
+
+    decodeResults.innerHTML = outputHTML;
     completeStep("step-decode");
     pipelineRunning = false;
 }
@@ -1414,5 +1515,62 @@ document.addEventListener("DOMContentLoaded", function() {
     const runButton = document.getElementById("run-pipeline-button");
     if (runButton) {
         runButton.addEventListener("click", runPipeline);
+    }
+
+    // Input mode toggle (text vs image)
+    const modeToggle = document.getElementById("input-mode-toggle");
+    const textInputArea = document.getElementById("text-input-wrapper");
+    const imageInputArea = document.getElementById("image-input-wrapper");
+
+    if (modeToggle) {
+        modeToggle.addEventListener("change", function() {
+            const mode = this.value;
+            currentInputMode = mode;
+            if (mode === "text") {
+                textInputArea.style.display = "block";
+                imageInputArea.style.display = "none";
+                currentImageData = null;
+            } else {
+                textInputArea.style.display = "none";
+                imageInputArea.style.display = "block";
+            }
+        });
+    }
+
+    // Image file input
+    const imageInput = document.getElementById("demo-image-input");
+    const imagePreview = document.getElementById("image-preview");
+    const imageInfo = document.getElementById("image-info");
+
+    if (imageInput) {
+        imageInput.addEventListener("change", function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Size limit: 50 KB to keep the pipeline fast in the browser
+            if (file.size > 50 * 1024) {
+                alert("Please choose an image under 50 KB. Large images produce very long DNA sequences and may slow down the browser.");
+                imageInput.value = "";
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                const uint8Array = new Uint8Array(arrayBuffer);
+                const dataUrl = URL.createObjectURL(file);
+
+                currentImageData = {
+                    bytes: uint8Array,
+                    mimeType: file.type || "image/png",
+                    originalDataUrl: dataUrl,
+                };
+
+                imagePreview.src = dataUrl;
+                imagePreview.style.display = "block";
+                imageInfo.textContent = `${file.name} — ${(file.size / 1024).toFixed(1)} KB — ${uint8Array.length * 8} bits`;
+            };
+            reader.readAsArrayBuffer(file);
+        });
     }
 });

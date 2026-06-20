@@ -210,21 +210,46 @@
     <div class="container">
         <h2 class="section-title">Interactive Pipeline Demo</h2>
         <p class="section-intro">
-            Type any text below and watch it flow through the entire DNA encoding pipeline —
+            Enter text or upload an image below and watch it flow through the entire DNA encoding pipeline —
             from binary conversion to multi-copy storage, error simulation, majority voting, and decoding.
         </p>
 
         <!-- Input -->
         <div class="pipeline-input-area">
-            <label for="demo-text-input">Enter text to encode:</label>
-            <textarea id="demo-text-input" rows="3" placeholder="Type your message here...">Hello DNA!</textarea>
+            <div class="input-mode-selector">
+                <label for="input-mode-toggle">Input Type:</label>
+                <select id="input-mode-toggle">
+                    <option value="text" selected>Text</option>
+                    <option value="image">Image</option>
+                </select>
+            </div>
+
+            <div id="text-input-wrapper">
+                <label for="demo-text-input">Enter text to encode:</label>
+                <textarea id="demo-text-input" rows="3" placeholder="Type your message here...">Hello DNA!</textarea>
+            </div>
+
+            <div id="image-input-wrapper" style="display:none;">
+                <label for="demo-image-input">Choose an image (max 50 KB):</label>
+                <input type="file" id="demo-image-input" accept="image/png,image/jpeg,image/gif,image/bmp,image/webp,image/svg+xml,image/tiff,image/ico" />
+                <div id="image-info" style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem;"></div>
+                <img id="image-preview" style="display:none;max-width:200px;max-height:200px;margin-top:0.5rem;border-radius:var(--radius-sm);border:1px solid var(--border-color);" />
+            </div>
+
             <div class="pipeline-controls">
                 <button id="run-pipeline-button" class="cta-btn">▶ Run Pipeline</button>
                 <label for="copy-count-select">Copies:</label>
                 <select id="copy-count-select">
                     <option value="1">1 copy</option>
+                    <option value="2">2 copies</option>
                     <option value="3">3 copies</option>
+                    <option value="4">4 copies</option>
                     <option value="5" selected>5 copies</option>
+                    <option value="6">6 copies</option>
+                    <option value="7">7 copies</option>
+                    <option value="8">8 copies</option>
+                    <option value="9">9 copies</option>
+                    <option value="10">10 copies</option>
                 </select>
             </div>
         </div>
