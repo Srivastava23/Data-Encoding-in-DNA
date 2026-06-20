@@ -216,33 +216,34 @@
 
         <!-- Input -->
         <div class="pipeline-input-area">
-            <div class="pipeline-dual-input">
-                <div class="input-panel" id="text-input-wrapper">
-                    <label for="demo-text-input">📝 Enter text to encode:</label>
-                    <textarea id="demo-text-input" rows="3" placeholder="Type your message here...">Hello DNA!</textarea>
-                </div>
-                <div class="input-divider"><span>OR</span></div>
-                <div class="input-panel" id="image-input-wrapper">
-                    <label for="demo-image-input">🖼️ Upload an image to encode:</label>
-                    <input type="file" id="demo-image-input" accept="image/png,image/jpeg,image/gif,image/bmp,image/webp,image/svg+xml,image/tiff,image/ico" />
-                    <div id="image-info" style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem;"></div>
-                    <img id="image-preview" style="display:none;max-width:200px;max-height:200px;margin-top:0.5rem;border-radius:var(--radius-sm);border:1px solid var(--border-color);" />
-                </div>
+            <!-- Image preview chip (shown when image is selected) -->
+            <div class="image-chip" id="image-chip" style="display:none;">
+                <img id="image-chip-preview" src="" alt="preview" />
+                <span id="image-chip-name"></span>
+                <button id="image-chip-remove" title="Remove image">&times;</button>
             </div>
 
-            <div class="pipeline-controls">
-                <button id="run-pipeline-button" class="cta-btn">▶ Run Pipeline</button>
-                <label for="copy-count-slider">Copies: <strong id="copy-count-value">10</strong></label>
-                <input type="range" id="copy-count-slider" min="1" max="10" value="10" step="1" list="copy-ticks" />
-                <datalist id="copy-ticks">
-                    <option value="1"></option><option value="2"></option><option value="3"></option>
-                    <option value="4"></option><option value="5"></option><option value="6"></option>
-                    <option value="7"></option><option value="8"></option><option value="9"></option>
-                    <option value="10"></option>
-                </datalist>
-                <div class="slider-labels">
-                    <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
-                    <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+            <!-- Unified input bar -->
+            <div class="chat-input-bar">
+                <button class="attach-btn" id="attach-btn" title="Attach image">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                </button>
+                <input type="file" id="demo-image-input" accept="image/*" style="display:none;" />
+                <textarea id="demo-text-input" rows="1" placeholder="Type text or attach an image to encode into DNA...">Hello DNA!</textarea>
+                <button class="send-btn" id="run-pipeline-button" title="Run pipeline (Enter)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+            </div>
+
+            <!-- Copies slider -->
+            <div class="copies-slider-container">
+                <span class="copies-slider-label">Copies: <strong id="copy-count-value">10</strong></span>
+                <div class="copies-slider-track">
+                    <input type="range" id="copy-count-slider" min="1" max="10" value="10" step="1" />
+                    <div class="copies-tick-marks">
+                        <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                        <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+                    </div>
                 </div>
             </div>
         </div>

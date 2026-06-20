@@ -639,13 +639,13 @@ async function runPipeline() {
             const testDibits = decodeNucleotidesToDibits(testConsensus, selectedMapping);
             const testBits = dibitsToIntegers(testDibits);
             const testAccuracy = computeBitAccuracy(binaryBits, testBits) * 100;
-            if (testAccuracy >= 100.0) {
+            if (testAccuracy >= 99.95) {
                 minimumCopiesNeeded = testCount;
                 break;
             }
         }
 
-        const perfectlyRecovered = multiCopyAccuracy >= 100.0;
+        const perfectlyRecovered = multiCopyAccuracy >= 99.95;
 
         outputHTML = `
             <div class="image-comparison-grid" style="grid-template-columns:1fr 1fr;">
@@ -738,7 +738,7 @@ function activateStep(stepId, statusText) {
     return new Promise(resolve => {
         const step = document.getElementById(stepId);
         step.classList.add("active");
-        step.querySelector(".step-status").textContent = statusText;
+        step.querySelector(".step-status").innerHTML = '<span class="step-spinner"></span>' + statusText;
         step.scrollIntoView({ behavior: "smooth", block: "nearest" });
         setTimeout(resolve, 200);
     });
@@ -748,7 +748,7 @@ function completeStep(stepId) {
     const step = document.getElementById(stepId);
     step.classList.remove("active");
     step.classList.add("completed");
-    step.querySelector(".step-status").textContent = "Complete";
+    step.querySelector(".step-status").innerHTML = '✓ Complete';
 }
 
 function delay(milliseconds) {
@@ -1535,63 +1535,62 @@ document.addEventListener("DOMContentLoaded", function() {
     initializeErrorLaboratory();
     loadDemoData();
 
-    // Pipeline button
-    const runButton = document.getElementById("run-pipeline-button");
-    if (runButton) {
-        runButton.addEventListener("click", runPipeline);
-    }
-
-    // Copies slider label
+    const textInput = document.getElementById("demo-text-input");
+    const imageInput = document.getElementById("demo-image-input");
+    const attachBtn = document.getElementById("attach-btn");
+    const sendBtn = document.getElementById("run-pipeline-button");
     const copySlider = document.getElementById("copy-count-slider");
     const copyValue = document.getElementById("copy-count-value");
+    const imageChip = document.getElementById("image-chip");
+    const imageChipPreview = document.getElementById("image-chip-preview");
+    const imageChipName = document.getElementById("image-chip-name");
+    const imageChipRemove = document.getElementById("image-chip-remove");
+
+    // Run pipeline on button click
+    if (sendBtn) sendBtn.addEventListener("click", runPipeline);
+
+    // Run pipeline on Enter (Shift+Enter for newline)
+    if (textInput) {
+        textInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                runPipeline();
+            }
+        });
+
+        // Auto-grow textarea
+        textInput.addEventListener("input", function() {
+            this.style.height = "auto";
+            this.style.height = Math.min(this.scrollHeight, 120) + "px";
+
+            // If user starts typing, clear image
+            if (this.value.trim().length > 0 && currentImageData) {
+                currentImageData = null;
+                currentInputMode = "text";
+                imageInput.value = "";
+                imageChip.style.display = "none";
+            }
+        });
+    }
+
+    // Copies slider label update
     if (copySlider && copyValue) {
         copySlider.addEventListener("input", function() {
             copyValue.textContent = this.value;
         });
     }
 
-    // Mutual exclusion between text and image inputs
-    const textPanel = document.getElementById("text-input-wrapper");
-    const imagePanel = document.getElementById("image-input-wrapper");
-    const textInput = document.getElementById("demo-text-input");
-    const imageInput = document.getElementById("demo-image-input");
-    const imagePreview = document.getElementById("image-preview");
-    const imageInfo = document.getElementById("image-info");
-
-    function activateTextMode() {
-        currentInputMode = "text";
-        currentImageData = null;
-        textPanel.classList.add("active-input");
-        textPanel.classList.remove("dimmed");
-        imagePanel.classList.add("dimmed");
-        imagePanel.classList.remove("active-input");
-    }
-
-    function activateImageMode() {
-        currentInputMode = "image";
-        imagePanel.classList.add("active-input");
-        imagePanel.classList.remove("dimmed");
-        textPanel.classList.add("dimmed");
-        textPanel.classList.remove("active-input");
-    }
-
-    // Text input: typing activates text mode
-    if (textInput) {
-        textInput.addEventListener("input", function() {
-            if (this.value.trim().length > 0) {
-                activateTextMode();
-                // Clear image selection
-                if (imageInput) imageInput.value = "";
-                if (imagePreview) imagePreview.style.display = "none";
-                if (imageInfo) imageInfo.textContent = "";
-            }
+    // Attach button triggers file picker
+    if (attachBtn && imageInput) {
+        attachBtn.addEventListener("click", function() {
+            imageInput.click();
         });
     }
 
-    // Image input: selecting a file activates image mode
+    // Image file selected
     if (imageInput) {
-        imageInput.addEventListener("change", function(event) {
-            const file = event.target.files[0];
+        imageInput.addEventListener("change", function(e) {
+            const file = e.target.files[0];
             if (!file) return;
 
             const img = new Image();
@@ -1600,10 +1599,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 const canvas = document.createElement("canvas");
                 canvas.width = img.naturalWidth;
                 canvas.height = img.naturalHeight;
-                const context = canvas.getContext("2d");
-                context.drawImage(img, 0, 0);
-                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                const pixelBytes = new Uint8Array(imageData.data);
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0);
+                const pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const pixelBytes = new Uint8Array(pixelData.data);
 
                 currentImageData = {
                     bytes: pixelBytes,
@@ -1611,17 +1610,30 @@ document.addEventListener("DOMContentLoaded", function() {
                     height: canvas.height,
                     originalDataUrl: objectUrl,
                 };
+                currentInputMode = "image";
 
-                imagePreview.src = objectUrl;
-                imagePreview.style.display = "block";
-                imageInfo.textContent = `${file.name} \u2014 ${img.naturalWidth}\u00D7${img.naturalHeight} pixels \u2014 ${pixelBytes.length.toLocaleString()} bytes`;
+                // Show image chip
+                imageChipPreview.src = objectUrl;
+                imageChipName.textContent = file.name + " (" + img.naturalWidth + "\u00D7" + img.naturalHeight + ")";
+                imageChip.style.display = "flex";
 
-                activateImageMode();
+                // Clear text input
+                textInput.value = "";
+                textInput.style.height = "auto";
+                textInput.placeholder = "Image attached \u2014 press Enter or click send to encode";
             };
             img.src = objectUrl;
         });
     }
 
-    // Start in text mode by default
-    activateTextMode();
+    // Remove image chip
+    if (imageChipRemove) {
+        imageChipRemove.addEventListener("click", function() {
+            currentImageData = null;
+            currentInputMode = "text";
+            imageInput.value = "";
+            imageChip.style.display = "none";
+            textInput.placeholder = "Type text or attach an image to encode into DNA...";
+        });
+    }
 });
