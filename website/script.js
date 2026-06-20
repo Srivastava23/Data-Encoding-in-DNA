@@ -640,7 +640,7 @@ async function runPipeline() {
             const testBits = dibitsToIntegers(testDibits);
             const testAccuracy = computeBitAccuracy(binaryBits, testBits) * 100;
             if (testAccuracy >= 99.95) {
-                minimumCopiesNeeded = testCount;
+        minimumCopiesNeeded = testCount;
                 break;
             }
         }
@@ -648,15 +648,16 @@ async function runPipeline() {
         const perfectlyRecovered = multiCopyAccuracy >= 99.95;
 
         outputHTML = `
-            <div class="image-comparison-grid" style="grid-template-columns:1fr 1fr;">
+            <div class="image-comparison-grid">
                 <div class="image-compare-card">
                     <h4>Original Image</h4>
                     <img src="${currentImageData.originalDataUrl}" alt="Original" class="pipeline-image" />
+                    <div class="accuracy-badge original-badge">Source</div>
                 </div>
                 <div class="image-compare-card">
                     <h4>Decoded from ${numberOfCopies}-Copy Consensus</h4>
                     <img src="${decodedUrl}" alt="Consensus decoded" class="pipeline-image" />
-                    <div class="accuracy-value ${multiCopyAccuracy > 99.9 ? 'good' : multiCopyAccuracy > 90 ? 'medium' : 'poor'}">${multiCopyAccuracy.toFixed(1)}% bit accuracy</div>
+                    <div class="accuracy-badge ${multiCopyAccuracy > 99.9 ? 'good' : multiCopyAccuracy > 90 ? 'medium' : 'poor'}">${multiCopyAccuracy.toFixed(1)}% accurate</div>
                 </div>
             </div>
             <div class="accuracy-comparison">
@@ -686,6 +687,21 @@ async function runPipeline() {
         const singleCopyHighlighted = highlightMismatches(inputText, singleCopyDecodedText);
         const multiCopyHighlighted = highlightMismatches(inputText, decodedText);
 
+        // Calculate minimum copies needed for 100% accuracy
+        let textMinCopies = numberOfCopies;
+        let textPerfect = multiCopyAccuracy >= 99.95;
+        for (let c = 1; c <= numberOfCopies; c++) {
+            const subset = mutatedCopies.slice(0, c);
+            const testCons = majorityVote(subset);
+            const testDibits = decodeNucleotidesToDibits(testCons, selectedMapping);
+            const testBits = dibitsToIntegers(testDibits);
+            const testAcc = computeBitAccuracy(binaryBits, testBits) * 100;
+            if (testAcc >= 99.95) {
+                textMinCopies = c;
+                break;
+            }
+        }
+
         outputHTML = `
             <div style="margin-bottom:1rem;">
                 <strong>Original Text:</strong>
@@ -703,10 +719,10 @@ async function runPipeline() {
                 <div class="accuracy-card">
                     <div class="accuracy-label">Average Single Copy</div>
                     <div class="accuracy-value ${averageSingleAccuracy > 90 ? 'good' : averageSingleAccuracy > 70 ? 'medium' : 'poor'}">${averageSingleAccuracy.toFixed(1)}%</div>
-                    <div class="accuracy-label">Without redundancy (best: ${bestSingleAccuracy.toFixed(1)}%, worst: ${worstSingleAccuracy.toFixed(1)}%)</div>
+                    <div class="accuracy-label">Without redundancy</div>
                 </div>
                 <div class="accuracy-card">
-                    <div class="accuracy-label">Multi-Copy Consensus (${numberOfCopies} copies)</div>
+                    <div class="accuracy-label">Consensus (${numberOfCopies} copies)</div>
                     <div class="accuracy-value ${multiCopyAccuracy > 90 ? 'good' : multiCopyAccuracy > 70 ? 'medium' : 'poor'}">${multiCopyAccuracy.toFixed(1)}%</div>
                     <div class="accuracy-label">With majority voting</div>
                 </div>
@@ -714,6 +730,11 @@ async function runPipeline() {
                     <div class="accuracy-label">Improvement</div>
                     <div class="accuracy-value ${improvement >= 0 ? 'good' : 'poor'}">${improvement >= 0 ? '+' : ''}${improvement.toFixed(1)}%</div>
                     <div class="accuracy-label">From redundancy</div>
+                </div>
+                <div class="accuracy-card">
+                    <div class="accuracy-label">Minimum Copies for 100%</div>
+                    <div class="accuracy-value ${textPerfect ? 'good' : 'poor'}">${textPerfect ? textMinCopies : 'More than ' + numberOfCopies}</div>
+                    <div class="accuracy-label">${textPerfect ? 'Zero data loss achieved' : 'Try more copies'}</div>
                 </div>
             </div>
         `;
@@ -1560,8 +1581,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Auto-grow textarea
         textInput.addEventListener("input", function() {
-            this.style.height = "auto";
+            this.style.height = "36px";
+            this.style.lineHeight = this.scrollHeight > 36 ? "1.5" : "36px";
             this.style.height = Math.min(this.scrollHeight, 120) + "px";
+            this.style.overflowY = this.scrollHeight > 120 ? "auto" : "hidden";
 
             // If user starts typing, clear image
             if (this.value.trim().length > 0 && currentImageData) {

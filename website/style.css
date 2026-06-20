@@ -281,14 +281,15 @@ footer{padding:2rem;text-align:center;border-top:1px solid var(--border-color);b
     background:var(--bg-secondary);
     border:1px solid var(--border-color);
     border-radius:1.5rem;
-    padding:0.5rem;
+    padding:0.4rem 0.5rem;
     transition:border-color 0.2s;
 }
 .chat-input-bar:focus-within{border-color:var(--accent);}
 .chat-input-bar textarea{
     flex:1;background:transparent;border:none;color:var(--text-primary);
     font-family:inherit;font-size:0.95rem;resize:none;outline:none;
-    line-height:1.5;max-height:120px;min-height:1.5em;padding:0.25rem 0.5rem;
+    line-height:36px;height:36px;max-height:120px;padding:0 0.5rem;
+    overflow-y:hidden;margin:0;box-sizing:border-box;vertical-align:middle;
 }
 .attach-btn,.send-btn{
     flex-shrink:0;width:36px;height:36px;border-radius:50%;border:none;
@@ -341,10 +342,19 @@ footer{padding:2rem;text-align:center;border-top:1px solid var(--border-color);b
 }
 
 /* Image comparison (decode output) */
-.image-comparison-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.2rem;margin-bottom:1.2rem;max-width:700px;margin-left:auto;margin-right:auto;}
-.image-compare-card{background:var(--bg-glass);border:1px solid var(--border-color);border-radius:var(--radius);padding:1rem;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.image-compare-card h4{font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.6rem;font-weight:600;}
-.pipeline-image{max-width:100%;max-height:150px;object-fit:contain;border-radius:var(--radius-sm);border:1px solid var(--border-color);display:block;margin:0 auto;}
+.image-comparison-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem;max-width:600px;margin-left:auto;margin-right:auto;}
+.image-compare-card{
+    background:var(--bg-glass);border:1px solid var(--border-color);border-radius:var(--radius);
+    padding:1rem;text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:0.5rem;
+}
+.image-compare-card h4{font-size:0.75rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;margin:0;}
+.pipeline-image{width:180px;height:180px;object-fit:contain;border-radius:var(--radius-sm);border:1px solid var(--border-color);}
+.accuracy-badge{font-size:0.75rem;font-weight:600;padding:0.25rem 0.75rem;border-radius:1rem;display:inline-block;}
+.accuracy-badge.good{background:rgba(46,204,113,0.15);color:#2ecc71;}
+.accuracy-badge.medium{background:rgba(241,196,15,0.15);color:#f1c40f;}
+.accuracy-badge.poor{background:rgba(231,76,60,0.15);color:#e74c3c;}
+.accuracy-badge.original-badge{background:rgba(99,102,241,0.15);color:var(--accent);}
 
 /* ===== RESPONSIVE ===== */
 @media(max-width:768px){
