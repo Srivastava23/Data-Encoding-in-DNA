@@ -1547,13 +1547,6 @@ document.addEventListener("DOMContentLoaded", function() {
             const file = event.target.files[0];
             if (!file) return;
 
-            // Size limit: 50 KB to keep the pipeline fast in the browser
-            if (file.size > 50 * 1024) {
-                alert("Please choose an image under 50 KB. Large images produce very long DNA sequences and may slow down the browser.");
-                imageInput.value = "";
-                return;
-            }
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 const arrayBuffer = e.target.result;

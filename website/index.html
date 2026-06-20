@@ -49,14 +49,14 @@
         <div class="hero-stats">
             <div class="stat-pill">
                 <span class="stat-value">100%</span>
-                <span class="stat-label">Accuracy (5 Copies)</span>
+                <span class="stat-label">Accuracy (10 Copies)</span>
             </div>
             <div class="stat-pill">
                 <span class="stat-value">100,000</span>
                 <span class="stat-label">Training Epochs</span>
             </div>
             <div class="stat-pill">
-                <span class="stat-value">3–5</span>
+                <span class="stat-value">1–10</span>
                 <span class="stat-label">Redundant Copies</span>
             </div>
             <div class="stat-pill">
@@ -230,7 +230,7 @@
             </div>
 
             <div id="image-input-wrapper" style="display:none;">
-                <label for="demo-image-input">Choose an image (max 50 KB):</label>
+                <label for="demo-image-input">Choose an image to encode:</label>
                 <input type="file" id="demo-image-input" accept="image/png,image/jpeg,image/gif,image/bmp,image/webp,image/svg+xml,image/tiff,image/ico" />
                 <div id="image-info" style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem;"></div>
                 <img id="image-preview" style="display:none;max-width:200px;max-height:200px;margin-top:0.5rem;border-radius:var(--radius-sm);border:1px solid var(--border-color);" />
@@ -244,12 +244,12 @@
                     <option value="2">2 copies</option>
                     <option value="3">3 copies</option>
                     <option value="4">4 copies</option>
-                    <option value="5" selected>5 copies</option>
+                    <option value="5">5 copies</option>
                     <option value="6">6 copies</option>
                     <option value="7">7 copies</option>
                     <option value="8">8 copies</option>
                     <option value="9">9 copies</option>
-                    <option value="10">10 copies</option>
+                    <option value="10" selected>10 copies</option>
                 </select>
             </div>
         </div>
@@ -449,7 +449,7 @@
         <h2 class="section-title">Multi-Copy Redundancy Analysis</h2>
         <p class="section-intro">
             Storing multiple copies of the same DNA-encoded data and using majority voting during retrieval
-            dramatically reduces decoding errors. Below: accuracy across 1 to 5 copies for each sequence length.
+            dramatically reduces decoding errors. Below: accuracy across 1 to 10 copies for each sequence length.
         </p>
         <div class="chart-section">
             <h3 class="chart-title">Decode Accuracy by Number of Copies <span class="chart-subtitle">(higher is better)</span></h3>
@@ -457,7 +457,7 @@
         </div>
         <div class="finding-highlight">
             <div class="big-stat">100%</div>
-            <div class="big-label">Decode accuracy achieved with 5 redundant copies on short sequences — zero data loss.</div>
+            <div class="big-label">Decode accuracy achieved with redundant copies and majority voting — zero data loss.</div>
         </div>
     </div>
 </section>
@@ -567,7 +567,7 @@
             <div class="arch-layer layer-3">
                 <div class="layer-badge">Redundancy</div>
                 <h3>Multi-Copy Storage + Majority Voting</h3>
-                <p>3–5 copies stored independently. During retrieval, position-wise majority voting builds a consensus strand.</p>
+                <p>1–10 copies stored independently. During retrieval, position-wise majority voting builds a consensus strand.</p>
             </div>
         </div>
     </div>

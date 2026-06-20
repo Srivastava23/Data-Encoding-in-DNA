@@ -4,20 +4,20 @@
 
 This project demonstrates a complete, visual pipeline for encoding digital binary data into DNA sequences. It uses Reinforcement Learning (Proximal Policy Optimisation) combined with an Error Predictor to learn the most robust mappings from bits to nucleotides (A, C, G, T) while maximising biological stability (GC content and minimising homopolymers).
 
-To combat the inherent noise in DNA synthesis and sequencing, the pipeline utilises **multi-copy redundancy** (storing 3 or 5 copies of the DNA sequence) and a consensus majority-voting algorithm to dramatically improve data retrieval accuracy.
+To combat the inherent noise in DNA synthesis and sequencing, the pipeline utilises **multi-copy redundancy** (storing up to 10 copies of the DNA sequence) and a consensus majority-voting algorithm to dramatically improve data retrieval accuracy.
 
 ## Key Findings
 
 | Metric | Value |
 |--------|-------|
-| Decode Accuracy (5 copies) | **100%** — zero data loss |
+| Decode Accuracy (10 copies) | **100%** — zero data loss |
 | Decode Accuracy (3 copies) | **~98.5%** |
 | Decode Accuracy (1 copy) | **~97.5%** |
 | Training Epochs | 100,000 per seed |
 | Independent Seeds | 3 (seed 42, 43, 44) |
 | Total Training Time | ~8.7 minutes (Google Colab T4 GPU) |
 
-The Predictive Reinforcement Learning agent with multi-copy redundancy achieves **100% decode accuracy** on short sequences (64 nucleotides) using 5 redundant copies with majority voting — effectively zero data loss.
+The Predictive Reinforcement Learning agent with multi-copy redundancy achieves **100% decode accuracy** on short sequences (64 nucleotides) using 10 redundant copies with majority voting — effectively zero data loss.
 
 ## Results Summary
 
@@ -35,7 +35,8 @@ The Predictive Reinforcement Learning agent with multi-copy redundancy achieves 
 
 - **Proximal Policy Optimisation Reinforcement Learning:** Dynamically chooses encoding mappings based on the specific binary data distribution.
 - **Error Predictor:** Anticipates potential sequencing errors (substitutions, insertions, deletions) to penalise fragile sequences during training.
-- **Multi-Copy Redundancy:** Encodes multiple distinct variations of the same data. During decoding, a majority vote recovers the original data with high fidelity, heavily mitigating substitution errors.
+- **Multi-Copy Redundancy:** Encodes multiple distinct variations of the same data (1 to 10 copies). During decoding, a majority vote recovers the original data with high fidelity, heavily mitigating substitution errors.
+- **Text and Image Encoding:** The interactive web demo supports encoding both plain text and image files (PNG, JPEG, GIF, BMP, WebP, and more) into DNA, demonstrating data-type agnostic operation.
 - **Google Colab Training:** Slimmed-down notebook (`DNA_Training_Colab.ipynb`) for fast GPU training of the Reinforcement Learning agents.
 - **Local Evaluation Pipeline:** Automated script (`run_full_pipeline.py`) that handles all testing on unseen data, ablation comparisons, and statistical chart generation.
 - **Interactive Web Dashboard:** A responsive web interface (`website/index.html`) that visualises the entire encoding process, simulates errors, and displays the trained model's performance graphs.
@@ -63,7 +64,7 @@ The Predictive Reinforcement Learning agent with multi-copy redundancy achieves 
 ┌────────────────────────────┐
 │  Redundancy: Multi-Copy    │
 │  Storage + Majority Voting │
-│  ─ 3–5 independent copies  │
+│  ─ 1–10 independent copies  │
 │  ─ Position-wise consensus │
 └────────────────────────────┘
 ```
