@@ -421,7 +421,7 @@ async function runPipeline() {
         binaryBits = textToBinary(inputText);
     }
 
-    const numberOfCopies = parseInt(document.getElementById("copy-count-select").value);
+    const numberOfCopies = parseInt(document.getElementById("copy-count-slider").value);
 
     // Reset all steps
     document.querySelectorAll(".pipeline-step").forEach(step => {
@@ -612,50 +612,68 @@ async function runPipeline() {
 
     if (isImageMode) {
         // === IMAGE MODE OUTPUT ===
-        const singleCopyDibits = decodeNucleotidesToDibits(mutatedCopies[0], selectedMapping);
-        const singleCopyBits = dibitsToIntegers(singleCopyDibits);
-        const singleCopyBytes = binaryToBytes(singleCopyBits, originalByteLength);
-        const singleCopyBlob = new Blob([singleCopyBytes], { type: currentImageData.mimeType });
-        const singleCopyUrl = URL.createObjectURL(singleCopyBlob);
+        const width = currentImageData.width;
+        const height = currentImageData.height;
 
-        const decodedBytes = binaryToBytes(decodedBits, originalByteLength);
-        const decodedBlob = new Blob([decodedBytes], { type: currentImageData.mimeType });
-        const decodedUrl = URL.createObjectURL(decodedBlob);
+        function pixelDataToUrl(bits, totalPixelBytes) {
+            const bytes = binaryToBytes(bits, totalPixelBytes);
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+            const context = canvas.getContext("2d");
+            const imageData = context.createImageData(width, height);
+            for (let i = 0; i < imageData.data.length; i++) {
+                imageData.data[i] = i < bytes.length ? bytes[i] : 255;
+            }
+            context.putImageData(imageData, 0, 0);
+            return canvas.toDataURL();
+        }
 
-        const singleCopyAccuracyValue = computeBitAccuracy(binaryBits, singleCopyBits) * 100;
+        const decodedUrl = pixelDataToUrl(decodedBits, originalByteLength);
+
+        // Calculate minimum copies needed for 100% accuracy
+        let minimumCopiesNeeded = numberOfCopies;
+        for (let testCount = 1; testCount <= numberOfCopies; testCount++) {
+            const subset = mutatedCopies.slice(0, testCount);
+            const testConsensus = majorityVote(subset);
+            const testDibits = decodeNucleotidesToDibits(testConsensus, selectedMapping);
+            const testBits = dibitsToIntegers(testDibits);
+            const testAccuracy = computeBitAccuracy(binaryBits, testBits) * 100;
+            if (testAccuracy >= 100.0) {
+                minimumCopiesNeeded = testCount;
+                break;
+            }
+        }
+
+        const perfectlyRecovered = multiCopyAccuracy >= 100.0;
 
         outputHTML = `
-            <div class="image-comparison-grid">
+            <div class="image-comparison-grid" style="grid-template-columns:1fr 1fr;">
                 <div class="image-compare-card">
                     <h4>Original Image</h4>
                     <img src="${currentImageData.originalDataUrl}" alt="Original" class="pipeline-image" />
                 </div>
                 <div class="image-compare-card">
-                    <h4>Single Copy Decoded (copy 1)</h4>
-                    <img src="${singleCopyUrl}" alt="Single copy decoded" class="pipeline-image" />
-                    <div class="accuracy-value ${singleCopyAccuracyValue > 90 ? 'good' : singleCopyAccuracyValue > 70 ? 'medium' : 'poor'}">${singleCopyAccuracyValue.toFixed(1)}% bit accuracy</div>
-                </div>
-                <div class="image-compare-card">
-                    <h4>Multi-Copy Consensus (${numberOfCopies} copies)</h4>
+                    <h4>Decoded from ${numberOfCopies}-Copy Consensus</h4>
                     <img src="${decodedUrl}" alt="Consensus decoded" class="pipeline-image" />
-                    <div class="accuracy-value ${multiCopyAccuracy > 90 ? 'good' : multiCopyAccuracy > 70 ? 'medium' : 'poor'}">${multiCopyAccuracy.toFixed(1)}% bit accuracy</div>
+                    <div class="accuracy-value ${multiCopyAccuracy > 99.9 ? 'good' : multiCopyAccuracy > 90 ? 'medium' : 'poor'}">${multiCopyAccuracy.toFixed(1)}% bit accuracy</div>
                 </div>
             </div>
             <div class="accuracy-comparison">
                 <div class="accuracy-card">
-                    <div class="accuracy-label">Average Single Copy</div>
+                    <div class="accuracy-label">Average Single Copy Accuracy</div>
                     <div class="accuracy-value ${averageSingleAccuracy > 90 ? 'good' : averageSingleAccuracy > 70 ? 'medium' : 'poor'}">${averageSingleAccuracy.toFixed(1)}%</div>
                     <div class="accuracy-label">Without redundancy</div>
                 </div>
                 <div class="accuracy-card">
-                    <div class="accuracy-label">Multi-Copy Consensus (${numberOfCopies} copies)</div>
-                    <div class="accuracy-value ${multiCopyAccuracy > 90 ? 'good' : multiCopyAccuracy > 70 ? 'medium' : 'poor'}">${multiCopyAccuracy.toFixed(1)}%</div>
+                    <div class="accuracy-label">Consensus Accuracy (${numberOfCopies} copies)</div>
+                    <div class="accuracy-value ${multiCopyAccuracy > 99.9 ? 'good' : multiCopyAccuracy > 90 ? 'medium' : 'poor'}">${multiCopyAccuracy.toFixed(1)}%</div>
                     <div class="accuracy-label">With majority voting</div>
                 </div>
                 <div class="accuracy-card">
-                    <div class="accuracy-label">Improvement</div>
-                    <div class="accuracy-value ${improvement >= 0 ? 'good' : 'poor'}">${improvement >= 0 ? '+' : ''}${improvement.toFixed(1)}%</div>
-                    <div class="accuracy-label">From redundancy</div>
+                    <div class="accuracy-label">Minimum Copies for 100%</div>
+                    <div class="accuracy-value ${perfectlyRecovered ? 'good' : 'poor'}">${perfectlyRecovered ? minimumCopiesNeeded : 'More than ' + numberOfCopies}</div>
+                    <div class="accuracy-label">${perfectlyRecovered ? 'Zero data loss achieved' : 'Try more copies'}</div>
                 </div>
             </div>
         `;
@@ -703,6 +721,12 @@ async function runPipeline() {
 
     decodeResults.innerHTML = outputHTML;
     completeStep("step-decode");
+
+    // Scroll to show the final results
+    setTimeout(() => {
+        decodeResults.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 300);
+
     pipelineRunning = false;
 }
 
@@ -1517,53 +1541,87 @@ document.addEventListener("DOMContentLoaded", function() {
         runButton.addEventListener("click", runPipeline);
     }
 
-    // Input mode toggle (text vs image)
-    const modeToggle = document.getElementById("input-mode-toggle");
-    const textInputArea = document.getElementById("text-input-wrapper");
-    const imageInputArea = document.getElementById("image-input-wrapper");
-
-    if (modeToggle) {
-        modeToggle.addEventListener("change", function() {
-            const mode = this.value;
-            currentInputMode = mode;
-            if (mode === "text") {
-                textInputArea.style.display = "block";
-                imageInputArea.style.display = "none";
-                currentImageData = null;
-            } else {
-                textInputArea.style.display = "none";
-                imageInputArea.style.display = "block";
-            }
+    // Copies slider label
+    const copySlider = document.getElementById("copy-count-slider");
+    const copyValue = document.getElementById("copy-count-value");
+    if (copySlider && copyValue) {
+        copySlider.addEventListener("input", function() {
+            copyValue.textContent = this.value;
         });
     }
 
-    // Image file input
+    // Mutual exclusion between text and image inputs
+    const textPanel = document.getElementById("text-input-wrapper");
+    const imagePanel = document.getElementById("image-input-wrapper");
+    const textInput = document.getElementById("demo-text-input");
     const imageInput = document.getElementById("demo-image-input");
     const imagePreview = document.getElementById("image-preview");
     const imageInfo = document.getElementById("image-info");
 
+    function activateTextMode() {
+        currentInputMode = "text";
+        currentImageData = null;
+        textPanel.classList.add("active-input");
+        textPanel.classList.remove("dimmed");
+        imagePanel.classList.add("dimmed");
+        imagePanel.classList.remove("active-input");
+    }
+
+    function activateImageMode() {
+        currentInputMode = "image";
+        imagePanel.classList.add("active-input");
+        imagePanel.classList.remove("dimmed");
+        textPanel.classList.add("dimmed");
+        textPanel.classList.remove("active-input");
+    }
+
+    // Text input: typing activates text mode
+    if (textInput) {
+        textInput.addEventListener("input", function() {
+            if (this.value.trim().length > 0) {
+                activateTextMode();
+                // Clear image selection
+                if (imageInput) imageInput.value = "";
+                if (imagePreview) imagePreview.style.display = "none";
+                if (imageInfo) imageInfo.textContent = "";
+            }
+        });
+    }
+
+    // Image input: selecting a file activates image mode
     if (imageInput) {
         imageInput.addEventListener("change", function(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const arrayBuffer = e.target.result;
-                const uint8Array = new Uint8Array(arrayBuffer);
-                const dataUrl = URL.createObjectURL(file);
+            const img = new Image();
+            const objectUrl = URL.createObjectURL(file);
+            img.onload = function() {
+                const canvas = document.createElement("canvas");
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                const context = canvas.getContext("2d");
+                context.drawImage(img, 0, 0);
+                const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                const pixelBytes = new Uint8Array(imageData.data);
 
                 currentImageData = {
-                    bytes: uint8Array,
-                    mimeType: file.type || "image/png",
-                    originalDataUrl: dataUrl,
+                    bytes: pixelBytes,
+                    width: canvas.width,
+                    height: canvas.height,
+                    originalDataUrl: objectUrl,
                 };
 
-                imagePreview.src = dataUrl;
+                imagePreview.src = objectUrl;
                 imagePreview.style.display = "block";
-                imageInfo.textContent = `${file.name} — ${(file.size / 1024).toFixed(1)} KB — ${uint8Array.length * 8} bits`;
+                imageInfo.textContent = `${file.name} \u2014 ${img.naturalWidth}\u00D7${img.naturalHeight} pixels \u2014 ${pixelBytes.length.toLocaleString()} bytes`;
+
+                activateImageMode();
             };
-            reader.readAsArrayBuffer(file);
+            img.src = objectUrl;
         });
     }
+
+    // Start in text mode by default
+    activateTextMode();
 });
