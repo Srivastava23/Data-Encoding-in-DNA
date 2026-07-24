@@ -1,11 +1,15 @@
 {
   "metadata": {
     "total_training_epochs": 100000,
-    "number_of_seeds": 3,
+    "number_of_seeds": 7,
     "seeds": [
       42,
       43,
-      44
+      44,
+      45,
+      46,
+      47,
+      48
     ],
     "dropout_rate": 0.1,
     "learning_rate_scheduling": true,
@@ -14,12 +18,14 @@
     "sequence_lengths": [
       64,
       128,
-      256
+      256,
+      512,
+      1024
     ],
     "ppo_learning_rate": 0.0003,
     "ppo_batch_size": 64,
     "ppo_hidden_dimension": 64,
-    "total_training_time_minutes": 8.7
+    "total_training_time_minutes": 19.9
   },
   "policy_lookup_table": [
     {
@@ -29,9 +35,9 @@
         0.550000011920929,
         0.25
       ],
-      "selected_action": 38,
-      "primary_mapping_index": 14,
-      "secondary_mapping_index": 20
+      "selected_action": 29,
+      "primary_mapping_index": 5,
+      "secondary_mapping_index": 11
     },
     {
       "dibit_distribution": [
@@ -40,14 +46,58 @@
         0.44999998807907104,
         0.25
       ],
-      "selected_action": 77,
-      "primary_mapping_index": 5,
-      "secondary_mapping_index": 23
+      "selected_action": 1,
+      "primary_mapping_index": 1,
+      "secondary_mapping_index": 1
     },
     {
       "dibit_distribution": [
         0.10000000149011612,
         0.30000001192092896,
+        0.3499999940395355,
+        0.25
+      ],
+      "selected_action": 7,
+      "primary_mapping_index": 7,
+      "secondary_mapping_index": 7
+    },
+    {
+      "dibit_distribution": [
+        0.10000000149011612,
+        0.4000000059604645,
+        0.25,
+        0.25
+      ],
+      "selected_action": 9,
+      "primary_mapping_index": 9,
+      "secondary_mapping_index": 9
+    },
+    {
+      "dibit_distribution": [
+        0.10000000149011612,
+        0.5,
+        0.15000000596046448,
+        0.25
+      ],
+      "selected_action": 63,
+      "primary_mapping_index": 15,
+      "secondary_mapping_index": 3
+    },
+    {
+      "dibit_distribution": [
+        0.20000000298023224,
+        0.10000000149011612,
+        0.44999998807907104,
+        0.25
+      ],
+      "selected_action": 70,
+      "primary_mapping_index": 22,
+      "secondary_mapping_index": 10
+    },
+    {
+      "dibit_distribution": [
+        0.20000000298023224,
+        0.20000000298023224,
         0.3499999940395355,
         0.25
       ],
@@ -57,31 +107,9 @@
     },
     {
       "dibit_distribution": [
-        0.10000000149011612,
-        0.4000000059604645,
-        0.25,
-        0.25
-      ],
-      "selected_action": 32,
-      "primary_mapping_index": 8,
-      "secondary_mapping_index": 14
-    },
-    {
-      "dibit_distribution": [
-        0.10000000149011612,
-        0.5,
-        0.15000000596046448,
-        0.25
-      ],
-      "selected_action": 62,
-      "primary_mapping_index": 14,
-      "secondary_mapping_index": 2
-    },
-    {
-      "dibit_distribution": [
         0.20000000298023224,
-        0.10000000149011612,
-        0.44999998807907104,
+        0.30000001192092896,
+        0.25,
         0.25
       ],
       "selected_action": 8,
@@ -91,118 +119,30 @@
     {
       "dibit_distribution": [
         0.20000000298023224,
-        0.20000000298023224,
-        0.3499999940395355,
+        0.4000000059604645,
+        0.15000000596046448,
         0.25
       ],
-      "selected_action": 45,
-      "primary_mapping_index": 21,
+      "selected_action": 3,
+      "primary_mapping_index": 3,
       "secondary_mapping_index": 3
     },
     {
       "dibit_distribution": [
         0.20000000298023224,
-        0.30000001192092896,
-        0.25,
-        0.25
-      ],
-      "selected_action": 76,
-      "primary_mapping_index": 4,
-      "secondary_mapping_index": 22
-    },
-    {
-      "dibit_distribution": [
-        0.20000000298023224,
-        0.4000000059604645,
-        0.15000000596046448,
-        0.25
-      ],
-      "selected_action": 85,
-      "primary_mapping_index": 13,
-      "secondary_mapping_index": 7
-    },
-    {
-      "dibit_distribution": [
-        0.20000000298023224,
         0.5,
         0.05000000074505806,
         0.25
       ],
-      "selected_action": 77,
-      "primary_mapping_index": 5,
-      "secondary_mapping_index": 23
+      "selected_action": 87,
+      "primary_mapping_index": 15,
+      "secondary_mapping_index": 9
     },
     {
       "dibit_distribution": [
         0.30000001192092896,
         0.10000000149011612,
         0.3499999940395355,
-        0.25
-      ],
-      "selected_action": 1,
-      "primary_mapping_index": 1,
-      "secondary_mapping_index": 1
-    },
-    {
-      "dibit_distribution": [
-        0.30000001192092896,
-        0.20000000298023224,
-        0.25,
-        0.25
-      ],
-      "selected_action": 12,
-      "primary_mapping_index": 12,
-      "secondary_mapping_index": 12
-    },
-    {
-      "dibit_distribution": [
-        0.30000001192092896,
-        0.30000001192092896,
-        0.15000000596046448,
-        0.25
-      ],
-      "selected_action": 91,
-      "primary_mapping_index": 19,
-      "secondary_mapping_index": 13
-    },
-    {
-      "dibit_distribution": [
-        0.30000001192092896,
-        0.4000000059604645,
-        0.05000000074505806,
-        0.25
-      ],
-      "selected_action": 73,
-      "primary_mapping_index": 1,
-      "secondary_mapping_index": 19
-    },
-    {
-      "dibit_distribution": [
-        0.30000001192092896,
-        0.5,
-        0.05000000074505806,
-        0.15000000596046448
-      ],
-      "selected_action": 84,
-      "primary_mapping_index": 12,
-      "secondary_mapping_index": 6
-    },
-    {
-      "dibit_distribution": [
-        0.4000000059604645,
-        0.10000000149011612,
-        0.25,
-        0.25
-      ],
-      "selected_action": 92,
-      "primary_mapping_index": 20,
-      "secondary_mapping_index": 14
-    },
-    {
-      "dibit_distribution": [
-        0.4000000059604645,
-        0.20000000298023224,
-        0.15000000596046448,
         0.25
       ],
       "selected_action": 82,
@@ -211,14 +151,80 @@
     },
     {
       "dibit_distribution": [
+        0.30000001192092896,
+        0.20000000298023224,
+        0.25,
+        0.25
+      ],
+      "selected_action": 24,
+      "primary_mapping_index": 0,
+      "secondary_mapping_index": 6
+    },
+    {
+      "dibit_distribution": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.15000000596046448,
+        0.25
+      ],
+      "selected_action": 46,
+      "primary_mapping_index": 22,
+      "secondary_mapping_index": 4
+    },
+    {
+      "dibit_distribution": [
+        0.30000001192092896,
+        0.4000000059604645,
+        0.05000000074505806,
+        0.25
+      ],
+      "selected_action": 94,
+      "primary_mapping_index": 22,
+      "secondary_mapping_index": 16
+    },
+    {
+      "dibit_distribution": [
+        0.30000001192092896,
+        0.5,
+        0.05000000074505806,
+        0.15000000596046448
+      ],
+      "selected_action": 45,
+      "primary_mapping_index": 21,
+      "secondary_mapping_index": 3
+    },
+    {
+      "dibit_distribution": [
+        0.4000000059604645,
+        0.10000000149011612,
+        0.25,
+        0.25
+      ],
+      "selected_action": 63,
+      "primary_mapping_index": 15,
+      "secondary_mapping_index": 3
+    },
+    {
+      "dibit_distribution": [
+        0.4000000059604645,
+        0.20000000298023224,
+        0.15000000596046448,
+        0.25
+      ],
+      "selected_action": 10,
+      "primary_mapping_index": 10,
+      "secondary_mapping_index": 10
+    },
+    {
+      "dibit_distribution": [
         0.4000000059604645,
         0.30000001192092896,
         0.05000000074505806,
         0.25
       ],
-      "selected_action": 51,
-      "primary_mapping_index": 3,
-      "secondary_mapping_index": 15
+      "selected_action": 72,
+      "primary_mapping_index": 0,
+      "secondary_mapping_index": 18
     },
     {
       "dibit_distribution": [
@@ -227,9 +233,9 @@
         0.05000000074505806,
         0.15000000596046448
       ],
-      "selected_action": 12,
-      "primary_mapping_index": 12,
-      "secondary_mapping_index": 12
+      "selected_action": 67,
+      "primary_mapping_index": 19,
+      "secondary_mapping_index": 7
     },
     {
       "dibit_distribution": [
@@ -238,9 +244,9 @@
         0.05000000074505806,
         0.05000000074505806
       ],
-      "selected_action": 44,
-      "primary_mapping_index": 20,
-      "secondary_mapping_index": 2
+      "selected_action": 90,
+      "primary_mapping_index": 18,
+      "secondary_mapping_index": 12
     },
     {
       "dibit_distribution": [
@@ -249,9 +255,9 @@
         0.15000000596046448,
         0.25
       ],
-      "selected_action": 37,
-      "primary_mapping_index": 13,
-      "secondary_mapping_index": 19
+      "selected_action": 72,
+      "primary_mapping_index": 0,
+      "secondary_mapping_index": 18
     },
     {
       "dibit_distribution": [
@@ -260,9 +266,9 @@
         0.05000000074505806,
         0.25
       ],
-      "selected_action": 0,
-      "primary_mapping_index": 0,
-      "secondary_mapping_index": 0
+      "selected_action": 9,
+      "primary_mapping_index": 9,
+      "secondary_mapping_index": 9
     },
     {
       "dibit_distribution": [
@@ -271,9 +277,9 @@
         0.05000000074505806,
         0.15000000596046448
       ],
-      "selected_action": 5,
-      "primary_mapping_index": 5,
-      "secondary_mapping_index": 5
+      "selected_action": 52,
+      "primary_mapping_index": 4,
+      "secondary_mapping_index": 16
     },
     {
       "dibit_distribution": [
@@ -282,9 +288,9 @@
         0.05000000074505806,
         0.05000000074505806
       ],
-      "selected_action": 0,
-      "primary_mapping_index": 0,
-      "secondary_mapping_index": 0
+      "selected_action": 92,
+      "primary_mapping_index": 20,
+      "secondary_mapping_index": 14
     },
     {
       "dibit_distribution": [
@@ -293,9 +299,9 @@
         0.04545454680919647,
         0.04545454680919647
       ],
-      "selected_action": 47,
-      "primary_mapping_index": 23,
-      "secondary_mapping_index": 5
+      "selected_action": 52,
+      "primary_mapping_index": 4,
+      "secondary_mapping_index": 16
     }
   ],
   "encoding_mappings": {
@@ -18219,112 +18225,216 @@
       "average_bit_accuracy_std": 0.0037063550465909283
     },
     {
+      "method": "baseline",
+      "seq_length": 512,
+      "average_error_rate_mean": 0.5920528160702406,
+      "average_error_rate_std": 0.006037870965700714,
+      "decode_accuracy_mean": 59.73218338536858,
+      "decode_accuracy_std": 0.3293104036867019,
+      "gc_score_mean": 0.9957161458333333,
+      "gc_score_std": 0.0014125053773251326,
+      "stability_score_mean": 0.8929329427083333,
+      "stability_score_std": 0.0009716456080881522,
+      "encoding_efficiency_mean": 0.2436951955160861,
+      "encoding_efficiency_std": 0.004930830583126411,
+      "average_bit_accuracy_mean": 0.5973218338536858,
+      "average_bit_accuracy_std": 0.0032931040368670314
+    },
+    {
+      "method": "baseline",
+      "seq_length": 1024,
+      "average_error_rate_mean": 0.6265897633021258,
+      "average_error_rate_std": 0.00478467322910613,
+      "decode_accuracy_mean": 57.465228177209404,
+      "decode_accuracy_std": 0.29931778265146214,
+      "gc_score_mean": 0.9924934895833334,
+      "gc_score_std": 0.0018272827178836576,
+      "stability_score_mean": 0.8982893880208334,
+      "stability_score_std": 0.000582568621070275,
+      "encoding_efficiency_mean": 0.21459514167332874,
+      "encoding_efficiency_std": 0.0038631519958602944,
+      "average_bit_accuracy_mean": 0.574652281772094,
+      "average_bit_accuracy_std": 0.002993177826514628
+    },
+    {
       "method": "predictive_reinforcement_learning",
       "seq_length": 64,
-      "average_error_rate_mean": 0.34512915363280267,
-      "average_error_rate_std": 0.011455173654392218,
-      "decode_accuracy_mean": 75.97922674843083,
-      "decode_accuracy_std": 0.6544563363939385,
-      "gc_score_mean": 0.9804166666666666,
-      "gc_score_std": 0.017650641316645895,
-      "stability_score_mean": 0.9018489583333333,
-      "stability_score_std": 0.003131720204771214,
-      "encoding_efficiency_mean": 0.497640580319531,
-      "encoding_efficiency_std": 0.013025448221734777,
-      "average_bit_accuracy_mean": 0.7597922674843082,
-      "average_bit_accuracy_std": 0.006544563363939403,
-      "t_statistic_versus_baseline": -0.3756909948138621,
-      "p_value_versus_baseline": 0.7262213412667012,
-      "t_statistic_versus_reinforcement_learning": 2.3831293879167608,
-      "p_value_versus_reinforcement_learning": 0.07573110136005577
+      "average_error_rate_mean": 0.3302903203243688,
+      "average_error_rate_std": 0.016229308060568673,
+      "decode_accuracy_mean": 77.14277775240929,
+      "decode_accuracy_std": 1.0891455237700924,
+      "gc_score_mean": 0.9889583333333333,
+      "gc_score_std": 0.006829076417951578,
+      "stability_score_mean": 0.9016406250000001,
+      "stability_score_std": 0.0014363106492851386,
+      "encoding_efficiency_mean": 0.516809373696359,
+      "encoding_efficiency_std": 0.019802574469699984,
+      "average_bit_accuracy_mean": 0.7714277775240928,
+      "average_bit_accuracy_std": 0.010891455237700923,
+      "t_statistic_versus_baseline": 0.6172625433246678,
+      "p_value_versus_baseline": 0.570465811727187,
+      "t_statistic_versus_reinforcement_learning": 2.587344197981498,
+      "p_value_versus_reinforcement_learning": 0.060854059671321986
     },
     {
       "method": "predictive_reinforcement_learning",
       "seq_length": 128,
-      "average_error_rate_mean": 0.43317605595364644,
-      "average_error_rate_std": 0.002891672195770485,
-      "decode_accuracy_mean": 70.25985069736554,
-      "decode_accuracy_std": 0.16972833378506286,
-      "gc_score_mean": 0.9940104166666667,
-      "gc_score_std": 0.0035729318512796563,
-      "stability_score_mean": 0.9206901041666667,
-      "stability_score_std": 0.0014410245137767255,
-      "encoding_efficiency_mean": 0.398254391461635,
-      "encoding_efficiency_std": 0.0029677367305451234,
-      "average_bit_accuracy_mean": 0.7025985069736552,
-      "average_bit_accuracy_std": 0.0016972833378506007,
-      "t_statistic_versus_baseline": -1.0554070831051385,
-      "p_value_versus_baseline": 0.35076717789745204,
-      "t_statistic_versus_reinforcement_learning": 2.625965713676451,
-      "p_value_versus_reinforcement_learning": 0.05843268653804473
+      "average_error_rate_mean": 0.41036208754119663,
+      "average_error_rate_std": 0.019152523966900037,
+      "decode_accuracy_mean": 71.95419680628869,
+      "decode_accuracy_std": 1.2786779377175788,
+      "gc_score_mean": 0.9792708333333332,
+      "gc_score_std": 0.009776417647271843,
+      "stability_score_mean": 0.9203906249999999,
+      "stability_score_std": 0.00482301931361253,
+      "encoding_efficiency_mean": 0.4245141100814985,
+      "encoding_efficiency_std": 0.021307006109663965,
+      "average_bit_accuracy_mean": 0.7195419680628868,
+      "average_bit_accuracy_std": 0.012786779377175796,
+      "t_statistic_versus_baseline": 0.9550290505604968,
+      "p_value_versus_baseline": 0.39364472867445455,
+      "t_statistic_versus_reinforcement_learning": 4.965984637594413,
+      "p_value_versus_reinforcement_learning": 0.0076733639079385515
     },
     {
       "method": "predictive_reinforcement_learning",
       "seq_length": 256,
-      "average_error_rate_mean": 0.514130590531436,
-      "average_error_rate_std": 0.00920962143891061,
-      "decode_accuracy_mean": 64.94868536280327,
-      "decode_accuracy_std": 0.5700261246928146,
-      "gc_score_mean": 0.9871093749999998,
-      "gc_score_std": 0.0053048351568797175,
-      "stability_score_mean": 0.9293359375,
-      "stability_score_std": 0.002176018510777135,
-      "encoding_efficiency_mean": 0.3156177291412639,
-      "encoding_efficiency_std": 0.008756710913710334,
-      "average_bit_accuracy_mean": 0.6494868536280328,
-      "average_bit_accuracy_std": 0.00570026124692814,
-      "t_statistic_versus_baseline": 0.39715396582732243,
-      "p_value_versus_baseline": 0.7115337481717647,
-      "t_statistic_versus_reinforcement_learning": 1.392747790162682,
-      "p_value_versus_reinforcement_learning": 0.23611628028819975
+      "average_error_rate_mean": 0.5220829988483922,
+      "average_error_rate_std": 0.01087742107944199,
+      "decode_accuracy_mean": 64.37857772332409,
+      "decode_accuracy_std": 0.8455603035999653,
+      "gc_score_mean": 0.990625,
+      "gc_score_std": 0.004282409362487045,
+      "stability_score_mean": 0.93017578125,
+      "stability_score_std": 0.0054102855166566245,
+      "encoding_efficiency_mean": 0.30776796080366026,
+      "encoding_efficiency_std": 0.01106710749222623,
+      "average_bit_accuracy_mean": 0.643785777233241,
+      "average_bit_accuracy_std": 0.008455603035999655,
+      "t_statistic_versus_baseline": -0.5194645209647959,
+      "p_value_versus_baseline": 0.6308569767095815,
+      "t_statistic_versus_reinforcement_learning": -0.23305731665539517,
+      "p_value_versus_reinforcement_learning": 0.8271571338785793
+    },
+    {
+      "method": "predictive_reinforcement_learning",
+      "seq_length": 512,
+      "average_error_rate_mean": 0.5879021122081355,
+      "average_error_rate_std": 0.011411494143008039,
+      "decode_accuracy_mean": 59.919521357351755,
+      "decode_accuracy_std": 0.7725653999446179,
+      "gc_score_mean": 0.9823697916666667,
+      "gc_score_std": 0.009545984881899401,
+      "stability_score_mean": 0.9390657552083334,
+      "stability_score_std": 0.004632718447494807,
+      "encoding_efficiency_mean": 0.24701520558501144,
+      "encoding_efficiency_std": 0.010008224150594927,
+      "average_bit_accuracy_mean": 0.5991952135735176,
+      "average_bit_accuracy_std": 0.007725653999446165,
+      "t_statistic_versus_baseline": 0.4546712533160796,
+      "p_value_versus_baseline": 0.6729277217071575,
+      "t_statistic_versus_reinforcement_learning": 0.3921190558179869,
+      "p_value_versus_reinforcement_learning": 0.7149660237868996
+    },
+    {
+      "method": "predictive_reinforcement_learning",
+      "seq_length": 1024,
+      "average_error_rate_mean": 0.6264619316526011,
+      "average_error_rate_std": 0.0027995627402940923,
+      "decode_accuracy_mean": 57.461260079717455,
+      "decode_accuracy_std": 0.1619353665549934,
+      "gc_score_mean": 0.9880403645833332,
+      "gc_score_std": 0.003836961439062454,
+      "stability_score_mean": 0.9450244140625,
+      "stability_score_std": 0.005310578840355276,
+      "encoding_efficiency_mean": 0.2146442128036331,
+      "encoding_efficiency_std": 0.002212077925747339,
+      "average_bit_accuracy_mean": 0.5746126007971745,
+      "average_bit_accuracy_std": 0.0016193536655499177,
+      "t_statistic_versus_baseline": 0.03261125569480825,
+      "p_value_versus_baseline": 0.9755469757594273,
+      "t_statistic_versus_reinforcement_learning": -0.5863354158752895,
+      "p_value_versus_reinforcement_learning": 0.5891419911563442
     },
     {
       "method": "predictive_reinforcement_learning_redundancy",
       "seq_length": 64,
-      "average_error_rate_mean": 0.26467936577311574,
-      "average_error_rate_std": 0.014390581638162744,
-      "decode_accuracy_mean": 81.85045405982906,
-      "decode_accuracy_std": 1.0059043183021255,
-      "gc_score_mean": 0.993125,
-      "gc_score_std": 0.005272521139518243,
-      "stability_score_mean": 0.8991666666666666,
-      "stability_score_std": 0.003912148324627913,
-      "encoding_efficiency_mean": 0.602007856605871,
-      "encoding_efficiency_std": 0.019194860134753827,
-      "average_bit_accuracy_mean": 0.8185045405982906,
-      "average_bit_accuracy_std": 0.010059043183021286
+      "average_error_rate_mean": 0.2634633352758353,
+      "average_error_rate_std": 0.028246558332220745,
+      "decode_accuracy_mean": 81.85505414724165,
+      "decode_accuracy_std": 1.806253209044671,
+      "gc_score_mean": 0.9788541666666667,
+      "gc_score_std": 0.0052684035901674146,
+      "stability_score_mean": 0.8950260416666667,
+      "stability_score_std": 0.003136264420275951,
+      "encoding_efficiency_mean": 0.6034024447098811,
+      "encoding_efficiency_std": 0.0367816598801963,
+      "average_bit_accuracy_mean": 0.8185505414724165,
+      "average_bit_accuracy_std": 0.0180625320904467
     },
     {
       "method": "predictive_reinforcement_learning_redundancy",
       "seq_length": 128,
-      "average_error_rate_mean": 0.38692402725715075,
-      "average_error_rate_std": 0.010935319319500557,
-      "decode_accuracy_mean": 73.46993446689686,
-      "decode_accuracy_std": 0.731403480025794,
-      "gc_score_mean": 0.984375,
-      "gc_score_std": 0.006588490200721229,
-      "stability_score_mean": 0.9181510416666666,
-      "stability_score_std": 0.0010311973892303337,
-      "encoding_efficiency_mean": 0.45050649200567894,
-      "encoding_efficiency_std": 0.012548127202643025,
-      "average_bit_accuracy_mean": 0.7346993446689685,
-      "average_bit_accuracy_std": 0.007314034800257961
+      "average_error_rate_mean": 0.384002019147662,
+      "average_error_rate_std": 0.004208208917368951,
+      "decode_accuracy_mean": 73.66059447764509,
+      "decode_accuracy_std": 0.2857913272640643,
+      "gc_score_mean": 0.9836458333333334,
+      "gc_score_std": 0.008491660022077845,
+      "stability_score_mean": 0.9188281250000001,
+      "stability_score_std": 0.0016316096546368539,
+      "encoding_efficiency_mean": 0.45375973840446954,
+      "encoding_efficiency_std": 0.004857770618261646,
+      "average_bit_accuracy_mean": 0.7366059447764508,
+      "average_bit_accuracy_std": 0.002857913272640651
     },
     {
       "method": "predictive_reinforcement_learning_redundancy",
       "seq_length": 256,
-      "average_error_rate_mean": 0.48333853321742537,
-      "average_error_rate_std": 0.007096207219384477,
-      "decode_accuracy_mean": 67.11017832036036,
-      "decode_accuracy_std": 0.45779360577245237,
-      "gc_score_mean": 0.9939322916666667,
-      "gc_score_std": 0.008029621808584094,
-      "stability_score_mean": 0.9339127604166667,
-      "stability_score_std": 0.005964600581478288,
-      "encoding_efficiency_mean": 0.34676471725711294,
-      "encoding_efficiency_std": 0.00714049643930347,
-      "average_bit_accuracy_mean": 0.6711017832036036,
-      "average_bit_accuracy_std": 0.004577936057724507
+      "average_error_rate_mean": 0.4794535825834569,
+      "average_error_rate_std": 0.005574825913887675,
+      "decode_accuracy_mean": 67.2650601562402,
+      "decode_accuracy_std": 0.371610517673902,
+      "gc_score_mean": 0.989375,
+      "gc_score_std": 0.005857812291611044,
+      "stability_score_mean": 0.9321614583333333,
+      "stability_score_std": 0.0010040827166023362,
+      "encoding_efficiency_mean": 0.35016646371322396,
+      "encoding_efficiency_std": 0.0056655838391924665,
+      "average_bit_accuracy_mean": 0.672650601562402,
+      "average_bit_accuracy_std": 0.0037161051767389992
+    },
+    {
+      "method": "predictive_reinforcement_learning_redundancy",
+      "seq_length": 512,
+      "average_error_rate_mean": 0.5579059801600241,
+      "average_error_rate_std": 0.005075169716317754,
+      "decode_accuracy_mean": 61.94001562965874,
+      "decode_accuracy_std": 0.32290341304886694,
+      "gc_score_mean": 0.9897395833333333,
+      "gc_score_std": 0.013931914422462801,
+      "stability_score_mean": 0.9425813802083334,
+      "stability_score_std": 0.0027075194089473302,
+      "encoding_efficiency_mean": 0.2738491646739432,
+      "encoding_efficiency_std": 0.00454471883981905,
+      "average_bit_accuracy_mean": 0.6194001562965874,
+      "average_bit_accuracy_std": 0.0032290341304886667
+    },
+    {
+      "method": "predictive_reinforcement_learning_redundancy",
+      "seq_length": 1024,
+      "average_error_rate_mean": 0.6017513784998255,
+      "average_error_rate_std": 0.006935212655401216,
+      "decode_accuracy_mean": 59.164550033093214,
+      "decode_accuracy_std": 0.391685341587507,
+      "gc_score_mean": 0.9786848958333333,
+      "gc_score_std": 0.008427069853782485,
+      "stability_score_mean": 0.9488102213541666,
+      "stability_score_std": 0.0030890297721124413,
+      "encoding_efficiency_mean": 0.2356491484337647,
+      "encoding_efficiency_std": 0.005643699912040052,
+      "average_bit_accuracy_mean": 0.5916455003309322,
+      "average_bit_accuracy_std": 0.003916853415875059
     },
     {
       "method": "random",
@@ -18375,58 +18485,126 @@
       "average_bit_accuracy_std": 0.00620441287488555
     },
     {
+      "method": "random",
+      "seq_length": 512,
+      "average_error_rate_mean": 0.593942023881637,
+      "average_error_rate_std": 0.011748350898434472,
+      "decode_accuracy_mean": 59.56787020153762,
+      "decode_accuracy_std": 0.7337815256368354,
+      "gc_score_mean": 0.9854557291666666,
+      "gc_score_std": 0.015567156386585493,
+      "stability_score_mean": 0.930537109375,
+      "stability_score_std": 0.002039932864212627,
+      "encoding_efficiency_mean": 0.24196620289543924,
+      "encoding_efficiency_std": 0.009924756556084734,
+      "average_bit_accuracy_mean": 0.5956787020153762,
+      "average_bit_accuracy_std": 0.007337815256368363
+    },
+    {
+      "method": "random",
+      "seq_length": 1024,
+      "average_error_rate_mean": 0.6161540169882432,
+      "average_error_rate_std": 0.004821446391995244,
+      "decode_accuracy_mean": 58.18776346092945,
+      "decode_accuracy_std": 0.40081632003720535,
+      "gc_score_mean": 0.9805338541666666,
+      "gc_score_std": 0.006421343795615751,
+      "stability_score_mean": 0.9366715494791666,
+      "stability_score_std": 0.004022727006484354,
+      "encoding_efficiency_mean": 0.22337028594545774,
+      "encoding_efficiency_std": 0.004326119470395548,
+      "average_bit_accuracy_mean": 0.5818776346092945,
+      "average_bit_accuracy_std": 0.0040081632003720535
+    },
+    {
       "method": "reinforcement_learning",
       "seq_length": 64,
-      "average_error_rate_mean": 0.3653085388906285,
-      "average_error_rate_std": 0.003489911139507759,
-      "decode_accuracy_mean": 74.81823610676223,
-      "decode_accuracy_std": 0.11447790746549147,
-      "gc_score_mean": 0.9933333333333333,
-      "gc_score_std": 0.004734715907234758,
-      "stability_score_mean": 0.8995833333333333,
-      "stability_score_std": 0.00675117338052351,
-      "encoding_efficiency_mean": 0.47486892771152234,
-      "encoding_efficiency_std": 0.0033346065011180914,
-      "average_bit_accuracy_mean": 0.7481823610676223,
-      "average_bit_accuracy_std": 0.0011447790746548804,
-      "t_statistic_versus_baseline": -2.269855108969949,
-      "p_value_versus_baseline": 0.08574136415278868
+      "average_error_rate_mean": 0.36272175326746225,
+      "average_error_rate_std": 0.007130501666514678,
+      "decode_accuracy_mean": 75.07461742496723,
+      "decode_accuracy_std": 0.6744384504779458,
+      "gc_score_mean": 0.9706250000000001,
+      "gc_score_std": 0.009772809856944925,
+      "stability_score_mean": 0.8973437500000001,
+      "stability_score_std": 0.007246979884608282,
+      "encoding_efficiency_mean": 0.4784821569934372,
+      "encoding_efficiency_std": 0.00965000795062988,
+      "average_bit_accuracy_mean": 0.7507461742496724,
+      "average_bit_accuracy_std": 0.006744384504779469,
+      "t_statistic_versus_baseline": -1.895014920717559,
+      "p_value_versus_baseline": 0.1309900842159757
     },
     {
       "method": "reinforcement_learning",
       "seq_length": 128,
-      "average_error_rate_mean": 0.47318718229521,
-      "average_error_rate_std": 0.02135307977769419,
-      "decode_accuracy_mean": 67.62437353785998,
-      "decode_accuracy_std": 1.5468388927455523,
-      "gc_score_mean": 0.9883854166666666,
-      "gc_score_std": 0.006800416143312277,
-      "stability_score_mean": 0.9193359375,
-      "stability_score_std": 0.0038122812010303033,
-      "encoding_efficiency_mean": 0.35658377321390233,
-      "encoding_efficiency_std": 0.022613301765814078,
-      "average_bit_accuracy_mean": 0.6762437353785998,
-      "average_bit_accuracy_std": 0.015468388927455497,
-      "t_statistic_versus_baseline": -2.8616648137904472,
-      "p_value_versus_baseline": 0.04585238181342909
+      "average_error_rate_mean": 0.47783116531935854,
+      "average_error_rate_std": 0.001533904993086443,
+      "decode_accuracy_mean": 67.27167913811331,
+      "decode_accuracy_std": 0.06178088155746478,
+      "gc_score_mean": 0.99234375,
+      "gc_score_std": 0.005450117066785474,
+      "stability_score_mean": 0.9190494791666667,
+      "stability_score_std": 0.0053582904535123535,
+      "encoding_efficiency_mean": 0.35127258764104824,
+      "encoding_efficiency_std": 0.0013279959964827073,
+      "average_bit_accuracy_mean": 0.672716791381133,
+      "average_bit_accuracy_std": 0.0006178088155746715,
+      "t_statistic_versus_baseline": -7.068921049244842,
+      "p_value_versus_baseline": 0.002113051958756121
     },
     {
       "method": "reinforcement_learning",
       "seq_length": 256,
-      "average_error_rate_mean": 0.5289652795802025,
-      "average_error_rate_std": 0.011920015072781488,
-      "decode_accuracy_mean": 63.98270938489073,
-      "decode_accuracy_std": 0.7281384324563069,
-      "gc_score_mean": 0.9932291666666666,
-      "gc_score_std": 0.0043997316837380545,
-      "stability_score_mean": 0.92916015625,
-      "stability_score_std": 0.0027497244032120218,
-      "encoding_efficiency_mean": 0.3014675273252665,
-      "encoding_efficiency_std": 0.011086399727036653,
-      "average_bit_accuracy_mean": 0.6398270938489073,
-      "average_bit_accuracy_std": 0.0072813843245630675,
-      "t_statistic_versus_baseline": -1.1931909615556715,
-      "p_value_versus_baseline": 0.29872785112808564
+      "average_error_rate_mean": 0.5192202297257655,
+      "average_error_rate_std": 0.013544462834761888,
+      "decode_accuracy_mean": 64.6153265001959,
+      "decode_accuracy_std": 0.9806227470203724,
+      "gc_score_mean": 0.9903385416666666,
+      "gc_score_std": 0.009271199079864026,
+      "stability_score_mean": 0.9315104166666667,
+      "stability_score_std": 0.002129194918629799,
+      "encoding_efficiency_mean": 0.3107898288248126,
+      "encoding_efficiency_std": 0.013550229394491863,
+      "average_bit_accuracy_mean": 0.646153265001959,
+      "average_bit_accuracy_std": 0.009806227470203694,
+      "t_statistic_versus_baseline": -0.17347208827008775,
+      "p_value_versus_baseline": 0.8707052015813004
+    },
+    {
+      "method": "reinforcement_learning",
+      "seq_length": 512,
+      "average_error_rate_mean": 0.5921554812285802,
+      "average_error_rate_std": 0.010251758519296885,
+      "decode_accuracy_mean": 59.79733279132795,
+      "decode_accuracy_std": 0.8228972663587123,
+      "gc_score_mean": 0.9918619791666666,
+      "gc_score_std": 0.004984649831329412,
+      "stability_score_mean": 0.941240234375,
+      "stability_score_std": 0.0012297968569014931,
+      "encoding_efficiency_mean": 0.24396450554731072,
+      "encoding_efficiency_std": 0.009427248900684025,
+      "average_bit_accuracy_mean": 0.5979733279132795,
+      "average_bit_accuracy_std": 0.008228972663587124,
+      "t_statistic_versus_baseline": -0.012203273178960132,
+      "p_value_versus_baseline": 0.990847829059357
+    },
+    {
+      "method": "reinforcement_learning",
+      "seq_length": 1024,
+      "average_error_rate_mean": 0.6236107602753832,
+      "average_error_rate_std": 0.006281249054672923,
+      "decode_accuracy_mean": 57.660104881832986,
+      "decode_accuracy_std": 0.36690597378567363,
+      "gc_score_mean": 0.9829166666666667,
+      "gc_score_std": 0.01732453313592664,
+      "stability_score_mean": 0.9500390625,
+      "stability_score_std": 0.0003663302756943842,
+      "encoding_efficiency_mean": 0.21704944014037053,
+      "encoding_efficiency_std": 0.005003129595163648,
+      "average_bit_accuracy_mean": 0.5766010488183299,
+      "average_bit_accuracy_std": 0.0036690597378567368,
+      "t_statistic_versus_baseline": 0.5335529290700313,
+      "p_value_versus_baseline": 0.6219204435177446
     }
   ],
   "ablation_results": [
@@ -18479,252 +18657,424 @@
       "average_bit_accuracy_std": 0.0037063550465909283
     },
     {
+      "method": "baseline",
+      "seq_length": 512,
+      "average_error_rate_mean": 0.5920528160702406,
+      "average_error_rate_std": 0.006037870965700714,
+      "decode_accuracy_mean": 59.73218338536858,
+      "decode_accuracy_std": 0.3293104036867019,
+      "gc_score_mean": 0.9957161458333333,
+      "gc_score_std": 0.0014125053773251326,
+      "stability_score_mean": 0.8929329427083333,
+      "stability_score_std": 0.0009716456080881522,
+      "encoding_efficiency_mean": 0.2436951955160861,
+      "encoding_efficiency_std": 0.004930830583126411,
+      "average_bit_accuracy_mean": 0.5973218338536858,
+      "average_bit_accuracy_std": 0.0032931040368670314
+    },
+    {
+      "method": "baseline",
+      "seq_length": 1024,
+      "average_error_rate_mean": 0.6265897633021258,
+      "average_error_rate_std": 0.00478467322910613,
+      "decode_accuracy_mean": 57.465228177209404,
+      "decode_accuracy_std": 0.29931778265146214,
+      "gc_score_mean": 0.9924934895833334,
+      "gc_score_std": 0.0018272827178836576,
+      "stability_score_mean": 0.8982893880208334,
+      "stability_score_std": 0.000582568621070275,
+      "encoding_efficiency_mean": 0.21459514167332874,
+      "encoding_efficiency_std": 0.0038631519958602944,
+      "average_bit_accuracy_mean": 0.574652281772094,
+      "average_bit_accuracy_std": 0.002993177826514628
+    },
+    {
       "method": "predictive_reinforcement_learning",
       "seq_length": 64,
-      "average_error_rate_mean": 0.344039972712026,
-      "average_error_rate_std": 0.015125022144911026,
-      "decode_accuracy_mean": 76.24465577893476,
-      "decode_accuracy_std": 1.0358006676165943,
-      "gc_score_mean": 0.9902083333333334,
-      "gc_score_std": 0.005378471101427338,
-      "stability_score_mean": 0.9040885416666665,
-      "stability_score_std": 0.00194773561992866,
-      "encoding_efficiency_mean": 0.5002897731154526,
-      "encoding_efficiency_std": 0.018183457407966185,
-      "average_bit_accuracy_mean": 0.7624465577893474,
-      "average_bit_accuracy_std": 0.01035800667616595,
-      "t_statistic_versus_baseline": -0.26243847425042316,
-      "p_value_versus_baseline": 0.8059452546611885,
-      "t_statistic_versus_reinforcement_learning": -0.4323858604930579,
-      "p_value_versus_reinforcement_learning": 0.6877511951956684
+      "average_error_rate_mean": 0.3416203848311234,
+      "average_error_rate_std": 0.03536312982159763,
+      "decode_accuracy_mean": 76.46986352452906,
+      "decode_accuracy_std": 2.342461721668638,
+      "gc_score_mean": 0.984375,
+      "gc_score_std": 0.009692539012044265,
+      "stability_score_mean": 0.9007552083333333,
+      "stability_score_std": 0.0025438323253126225,
+      "encoding_efficiency_mean": 0.5042886676874886,
+      "encoding_efficiency_std": 0.042943927171963436,
+      "average_bit_accuracy_mean": 0.7646986352452907,
+      "average_bit_accuracy_std": 0.0234246172166864,
+      "t_statistic_versus_baseline": -0.05794516133031766,
+      "p_value_versus_baseline": 0.9565715020904892,
+      "t_statistic_versus_reinforcement_learning": 0.577884728943489,
+      "p_value_versus_reinforcement_learning": 0.5943140737832939
     },
     {
       "method": "predictive_reinforcement_learning",
       "seq_length": 128,
-      "average_error_rate_mean": 0.46977905281988774,
-      "average_error_rate_std": 0.017802349081177535,
-      "decode_accuracy_mean": 67.78521489428361,
-      "decode_accuracy_std": 1.193941824230371,
-      "gc_score_mean": 0.9852604166666667,
-      "gc_score_std": 0.004467645065418212,
-      "stability_score_mean": 0.9176822916666666,
-      "stability_score_std": 0.002096637209153165,
-      "encoding_efficiency_mean": 0.35962324711938515,
-      "encoding_efficiency_std": 0.018237938122502708,
-      "average_bit_accuracy_mean": 0.6778521489428361,
-      "average_bit_accuracy_std": 0.011939418242303683,
-      "t_statistic_versus_baseline": -3.0622673980713744,
-      "p_value_versus_baseline": 0.03757524987966217,
-      "t_statistic_versus_reinforcement_learning": 0.09201922147100397,
-      "p_value_versus_reinforcement_learning": 0.9311070601773275
+      "average_error_rate_mean": 0.45837103544162333,
+      "average_error_rate_std": 0.0037576119250276093,
+      "decode_accuracy_mean": 68.62017033073329,
+      "decode_accuracy_std": 0.2004437935447735,
+      "gc_score_mean": 0.9872916666666667,
+      "gc_score_std": 0.011742914899939557,
+      "stability_score_mean": 0.9193880208333334,
+      "stability_score_std": 0.0026780533869914425,
+      "encoding_efficiency_mean": 0.3716741242028763,
+      "encoding_efficiency_std": 0.0036473711972364632,
+      "average_bit_accuracy_mean": 0.6862017033073329,
+      "average_bit_accuracy_std": 0.0020044379354477305,
+      "t_statistic_versus_baseline": -4.2419997510077465,
+      "p_value_versus_baseline": 0.013242377593767281,
+      "t_statistic_versus_reinforcement_learning": 1.0483509998437155,
+      "p_value_versus_reinforcement_learning": 0.3536411184945093
     },
     {
       "method": "predictive_reinforcement_learning",
       "seq_length": 256,
-      "average_error_rate_mean": 0.5343778820782296,
-      "average_error_rate_std": 0.014904112802525743,
-      "decode_accuracy_mean": 63.61505452159965,
-      "decode_accuracy_std": 1.059887541024876,
-      "gc_score_mean": 0.9815364583333333,
-      "gc_score_std": 0.010822748735463237,
-      "stability_score_mean": 0.9371549479166666,
-      "stability_score_std": 0.003708343848738608,
-      "encoding_efficiency_mean": 0.296363583940416,
-      "encoding_efficiency_std": 0.014335412902089627,
-      "average_bit_accuracy_mean": 0.6361505452159965,
-      "average_bit_accuracy_std": 0.010598875410248738,
-      "t_statistic_versus_baseline": -1.4667087095128826,
-      "p_value_versus_baseline": 0.216346936039355,
-      "t_statistic_versus_reinforcement_learning": -0.5635447205970682,
-      "p_value_versus_reinforcement_learning": 0.6031573620254396
+      "average_error_rate_mean": 0.5252070756941518,
+      "average_error_rate_std": 0.01328043601142514,
+      "decode_accuracy_mean": 64.18892474990493,
+      "decode_accuracy_std": 0.8603678247700415,
+      "gc_score_mean": 0.9829166666666667,
+      "gc_score_std": 0.006427281702773418,
+      "stability_score_mean": 0.9372460937500001,
+      "stability_score_std": 0.0012335135113496912,
+      "encoding_efficiency_mean": 0.3048786724416301,
+      "encoding_efficiency_std": 0.012625159099726486,
+      "average_bit_accuracy_mean": 0.6418892474990493,
+      "average_bit_accuracy_std": 0.008603678247700397,
+      "t_statistic_versus_baseline": -0.742444511299819,
+      "p_value_versus_baseline": 0.4990502721149994,
+      "t_statistic_versus_reinforcement_learning": 0.4735824665219042,
+      "p_value_versus_reinforcement_learning": 0.6604875840846129
+    },
+    {
+      "method": "predictive_reinforcement_learning",
+      "seq_length": 512,
+      "average_error_rate_mean": 0.5778698574356597,
+      "average_error_rate_std": 0.009373718394839149,
+      "decode_accuracy_mean": 60.71991442260144,
+      "decode_accuracy_std": 0.6321949073303325,
+      "gc_score_mean": 0.9921093750000001,
+      "gc_score_std": 0.004716813723874319,
+      "stability_score_mean": 0.9431966145833334,
+      "stability_score_std": 0.002469684322088639,
+      "encoding_efficiency_mean": 0.25637632032044877,
+      "encoding_efficiency_std": 0.0083590866899009,
+      "average_bit_accuracy_mean": 0.6071991442260144,
+      "average_bit_accuracy_std": 0.006321949073303333,
+      "t_statistic_versus_baseline": 1.7988998995392016,
+      "p_value_versus_baseline": 0.14642570550493522,
+      "t_statistic_versus_reinforcement_learning": -0.510767641913857,
+      "p_value_versus_reinforcement_learning": 0.6364120329782919
+    },
+    {
+      "method": "predictive_reinforcement_learning",
+      "seq_length": 1024,
+      "average_error_rate_mean": 0.6267341145599632,
+      "average_error_rate_std": 0.003919248689164973,
+      "decode_accuracy_mean": 57.4808023463896,
+      "decode_accuracy_std": 0.27866894559814315,
+      "gc_score_mean": 0.9807617187500001,
+      "gc_score_std": 0.011076578094131383,
+      "stability_score_mean": 0.94078125,
+      "stability_score_std": 0.0045458800810249484,
+      "encoding_efficiency_mean": 0.21456692353573983,
+      "encoding_efficiency_std": 0.003278001631193412,
+      "average_bit_accuracy_mean": 0.574808023463896,
+      "average_bit_accuracy_std": 0.0027866894559814177,
+      "t_statistic_versus_baseline": -0.03300649189698627,
+      "p_value_versus_baseline": 0.9752507479417994,
+      "t_statistic_versus_reinforcement_learning": -1.4495667040628162,
+      "p_value_versus_reinforcement_learning": 0.22077595202987318
     },
     {
       "method": "reinforcement_learning",
       "seq_length": 64,
-      "average_error_rate_mean": 0.3342115578313163,
-      "average_error_rate_std": 0.028365459299193797,
-      "decode_accuracy_mean": 76.87991129262757,
-      "decode_accuracy_std": 1.7502489831659929,
-      "gc_score_mean": 0.9907291666666667,
-      "gc_score_std": 0.0014950729265007568,
-      "stability_score_mean": 0.8959114583333333,
-      "stability_score_std": 0.004361182296614674,
-      "encoding_efficiency_mean": 0.5123539996147307,
-      "encoding_efficiency_std": 0.033810496657778126,
-      "average_bit_accuracy_mean": 0.7687991129262758,
-      "average_bit_accuracy_std": 0.017502489831659914,
-      "t_statistic_versus_baseline": 0.25559775073925656,
-      "p_value_versus_baseline": 0.8108668148284024
+      "average_error_rate_mean": 0.3576356794544349,
+      "average_error_rate_std": 0.01689798055733307,
+      "decode_accuracy_mean": 75.27771338017168,
+      "decode_accuracy_std": 1.0779554393695945,
+      "gc_score_mean": 0.9922916666666666,
+      "gc_score_std": 0.005875960323404323,
+      "stability_score_mean": 0.8978385416666668,
+      "stability_score_std": 0.003897559777889528,
+      "encoding_efficiency_mean": 0.4837386418904659,
+      "encoding_efficiency_std": 0.019546696516849895,
+      "average_bit_accuracy_mean": 0.7527771338017167,
+      "average_bit_accuracy_std": 0.01077955439369593,
+      "t_statistic_versus_baseline": -1.0899316418353104,
+      "p_value_versus_baseline": 0.33700451418387306
     },
     {
       "method": "reinforcement_learning",
       "seq_length": 128,
-      "average_error_rate_mean": 0.4712376346284259,
-      "average_error_rate_std": 0.013622574010829985,
-      "decode_accuracy_mean": 67.73496740246455,
-      "decode_accuracy_std": 0.9489444151000933,
-      "gc_score_mean": 0.97421875,
-      "gc_score_std": 0.00957087051944594,
-      "stability_score_mean": 0.9192187500000001,
-      "stability_score_std": 0.005272231729434337,
-      "encoding_efficiency_mean": 0.35828485682195416,
-      "encoding_efficiency_std": 0.014243186823743302,
-      "average_bit_accuracy_mean": 0.6773496740246454,
-      "average_bit_accuracy_std": 0.009489444151000937,
-      "t_statistic_versus_baseline": -3.8024818999976056,
-      "p_value_versus_baseline": 0.01906292078938186
+      "average_error_rate_mean": 0.46723615389785955,
+      "average_error_rate_std": 0.011353267849869732,
+      "decode_accuracy_mean": 67.92822899441326,
+      "decode_accuracy_std": 0.7330177716204317,
+      "gc_score_mean": 0.9900000000000001,
+      "gc_score_std": 0.013481637782245414,
+      "stability_score_mean": 0.9231380208333334,
+      "stability_score_std": 0.0012209071010136584,
+      "encoding_efficiency_mean": 0.36198026645270337,
+      "encoding_efficiency_std": 0.01161681492060676,
+      "average_bit_accuracy_mean": 0.6792822899441325,
+      "average_bit_accuracy_std": 0.00733017771620433,
+      "t_statistic_versus_baseline": -3.8644013236612107,
+      "p_value_versus_baseline": 0.01807938070069536
     },
     {
       "method": "reinforcement_learning",
       "seq_length": 256,
-      "average_error_rate_mean": 0.5278233853067665,
-      "average_error_rate_std": 0.006958459519811592,
-      "decode_accuracy_mean": 63.9520979289849,
-      "decode_accuracy_std": 0.631058883522299,
-      "gc_score_mean": 0.98578125,
-      "gc_score_std": 0.002067977260009564,
-      "stability_score_mean": 0.93443359375,
-      "stability_score_std": 0.001966038042023165,
-      "encoding_efficiency_mean": 0.3020107613983523,
-      "encoding_efficiency_std": 0.007436072869634328,
-      "average_bit_accuracy_mean": 0.639520979289849,
-      "average_bit_accuracy_std": 0.0063105888352230095,
-      "t_statistic_versus_baseline": -1.5136368564944762,
-      "p_value_versus_baseline": 0.20467590144185988
+      "average_error_rate_mean": 0.5301264294935556,
+      "average_error_rate_std": 0.006279468873693568,
+      "decode_accuracy_mean": 63.738449031369065,
+      "decode_accuracy_std": 0.3623439721108462,
+      "gc_score_mean": 0.9955989583333332,
+      "gc_score_std": 0.0034992868817168097,
+      "stability_score_mean": 0.9362369791666666,
+      "stability_score_std": 0.0012007439461873548,
+      "encoding_efficiency_mean": 0.29951287179683517,
+      "encoding_efficiency_std": 0.0056885085360298205,
+      "average_bit_accuracy_mean": 0.6373844903136906,
+      "average_bit_accuracy_std": 0.003623439721108445,
+      "t_statistic_versus_baseline": -1.9401474954180864,
+      "p_value_versus_baseline": 0.12435628483203895
+    },
+    {
+      "method": "reinforcement_learning",
+      "seq_length": 512,
+      "average_error_rate_mean": 0.5744637923378623,
+      "average_error_rate_std": 0.00103526154646428,
+      "decode_accuracy_mean": 60.92748714318657,
+      "decode_accuracy_std": 0.09823462288040331,
+      "gc_score_mean": 0.9876692708333333,
+      "gc_score_std": 0.011451835870870944,
+      "stability_score_mean": 0.9422037760416666,
+      "stability_score_std": 0.004275049129250888,
+      "encoding_efficiency_mean": 0.25926932245684603,
+      "encoding_efficiency_std": 0.000995396877558644,
+      "average_bit_accuracy_mean": 0.6092748714318655,
+      "average_bit_accuracy_std": 0.0009823462288040244,
+      "t_statistic_versus_baseline": 4.060514211523336,
+      "p_value_versus_baseline": 0.015342212792696288
+    },
+    {
+      "method": "reinforcement_learning",
+      "seq_length": 1024,
+      "average_error_rate_mean": 0.6183987943719206,
+      "average_error_rate_std": 0.007125267330609063,
+      "decode_accuracy_mean": 58.06014302837565,
+      "decode_accuracy_std": 0.5048357214551399,
+      "gc_score_mean": 0.9879427083333333,
+      "gc_score_std": 0.011000196204699428,
+      "stability_score_mean": 0.9432633463541666,
+      "stability_score_std": 0.0008271176271030938,
+      "encoding_efficiency_mean": 0.22159372613654035,
+      "encoding_efficiency_std": 0.00606863347103437,
+      "average_bit_accuracy_mean": 0.5806014302837564,
+      "average_bit_accuracy_std": 0.005048357214551427,
+      "t_statistic_versus_baseline": 1.3496680081994927,
+      "p_value_versus_baseline": 0.2484484019070988
     },
     {
       "method": "reinforcement_learning_no_gc",
       "seq_length": 64,
-      "average_error_rate_mean": 0.31567256273138633,
-      "average_error_rate_std": 0.033785832196623795,
-      "decode_accuracy_mean": 78.1956321664934,
-      "decode_accuracy_std": 2.3677203884160747,
-      "gc_score_mean": 0.9848958333333333,
-      "gc_score_std": 0.001981905999004196,
-      "stability_score_mean": 0.9033072916666667,
-      "stability_score_std": 0.0027527901722868182,
-      "encoding_efficiency_mean": 0.5359141015392261,
-      "encoding_efficiency_std": 0.04304241621561048,
-      "average_bit_accuracy_mean": 0.7819563216649339,
-      "average_bit_accuracy_std": 0.02367720388416075
+      "average_error_rate_mean": 0.31468613364004056,
+      "average_error_rate_std": 0.02889283550021715,
+      "decode_accuracy_mean": 78.23685707918312,
+      "decode_accuracy_std": 2.046081546566717,
+      "gc_score_mean": 0.9844791666666666,
+      "gc_score_std": 0.007865790470272072,
+      "stability_score_mean": 0.9035416666666666,
+      "stability_score_std": 0.004956407188904294,
+      "encoding_efficiency_mean": 0.5367588442400826,
+      "encoding_efficiency_std": 0.03670901145017438,
+      "average_bit_accuracy_mean": 0.7823685707918312,
+      "average_bit_accuracy_std": 0.020460815465667175
     },
     {
       "method": "reinforcement_learning_no_gc",
       "seq_length": 128,
-      "average_error_rate_mean": 0.45185236368578524,
-      "average_error_rate_std": 0.03065678122198191,
-      "decode_accuracy_mean": 69.09208292504526,
-      "decode_accuracy_std": 2.0575325533836537,
-      "gc_score_mean": 0.9884895833333333,
-      "gc_score_std": 0.008638927965256366,
-      "stability_score_mean": 0.9230989583333332,
-      "stability_score_std": 0.007941406143254386,
-      "encoding_efficiency_mean": 0.37935557754026555,
-      "encoding_efficiency_std": 0.03251259845041575,
-      "average_bit_accuracy_mean": 0.6909208292504525,
-      "average_bit_accuracy_std": 0.020575325533836532
+      "average_error_rate_mean": 0.43109478290189246,
+      "average_error_rate_std": 0.012339430164235643,
+      "decode_accuracy_mean": 70.5212953904951,
+      "decode_accuracy_std": 0.9396099220076325,
+      "gc_score_mean": 0.9800000000000001,
+      "gc_score_std": 0.0030485438805545584,
+      "stability_score_mean": 0.9246875000000001,
+      "stability_score_std": 0.001023109441695989,
+      "encoding_efficiency_mean": 0.4013144627642557,
+      "encoding_efficiency_std": 0.01409860050214762,
+      "average_bit_accuracy_mean": 0.705212953904951,
+      "average_bit_accuracy_std": 0.00939609922007635
     },
     {
       "method": "reinforcement_learning_no_gc",
       "seq_length": 256,
-      "average_error_rate_mean": 0.5197717612710997,
-      "average_error_rate_std": 0.010906901936607313,
-      "decode_accuracy_mean": 64.50224592295898,
-      "decode_accuracy_std": 0.6419974167912839,
-      "gc_score_mean": 0.9902604166666666,
-      "gc_score_std": 0.005690208451561542,
-      "stability_score_mean": 0.9381966145833333,
-      "stability_score_std": 0.0024021761317992076,
-      "encoding_efficiency_mean": 0.3098280204320225,
-      "encoding_efficiency_std": 0.010165858395269076,
-      "average_bit_accuracy_mean": 0.6450224592295899,
-      "average_bit_accuracy_std": 0.006419974167912844
+      "average_error_rate_mean": 0.5309182656191299,
+      "average_error_rate_std": 0.00605229767500718,
+      "decode_accuracy_mean": 63.75346535126503,
+      "decode_accuracy_std": 0.5512423328590678,
+      "gc_score_mean": 0.9917708333333334,
+      "gc_score_std": 0.004802975784749315,
+      "stability_score_mean": 0.9376171875,
+      "stability_score_std": 0.0004994809317400094,
+      "encoding_efficiency_mean": 0.2990891768768416,
+      "encoding_efficiency_std": 0.0064374730494715,
+      "average_bit_accuracy_mean": 0.6375346535126504,
+      "average_bit_accuracy_std": 0.0055124233285906935
+    },
+    {
+      "method": "reinforcement_learning_no_gc",
+      "seq_length": 512,
+      "average_error_rate_mean": 0.5839388073318373,
+      "average_error_rate_std": 0.013252006605569517,
+      "decode_accuracy_mean": 60.19714095727664,
+      "decode_accuracy_std": 0.9415860302359303,
+      "gc_score_mean": 0.9898567708333333,
+      "gc_score_std": 0.004647215496473087,
+      "stability_score_mean": 0.9413118489583333,
+      "stability_score_std": 0.0034183996504177595,
+      "encoding_efficiency_mean": 0.2505815120776203,
+      "encoding_efficiency_std": 0.011861934573559208,
+      "average_bit_accuracy_mean": 0.6019714095727663,
+      "average_bit_accuracy_std": 0.009415860302359323
+    },
+    {
+      "method": "reinforcement_learning_no_gc",
+      "seq_length": 1024,
+      "average_error_rate_mean": 0.6375818931792353,
+      "average_error_rate_std": 0.006505853998034132,
+      "decode_accuracy_mean": 56.713277441134444,
+      "decode_accuracy_std": 0.40664245449802616,
+      "gc_score_mean": 0.9820768229166666,
+      "gc_score_std": 0.013082500455550846,
+      "stability_score_mean": 0.9463981119791667,
+      "stability_score_std": 0.0024207010466104797,
+      "encoding_efficiency_mean": 0.20556554788187506,
+      "encoding_efficiency_std": 0.0051783645021700195,
+      "average_bit_accuracy_mean": 0.5671327744113445,
+      "average_bit_accuracy_std": 0.004066424544980249
     },
     {
       "method": "reinforcement_learning_no_homopolymer",
       "seq_length": 64,
-      "average_error_rate_mean": 0.32965617489646243,
-      "average_error_rate_std": 0.011209174392800362,
-      "decode_accuracy_mean": 77.20509052225333,
-      "decode_accuracy_std": 0.8678056555115723,
-      "gc_score_mean": 0.9934375000000001,
-      "gc_score_std": 0.007760241888412215,
-      "stability_score_mean": 0.9033072916666667,
-      "stability_score_std": 0.004113429426805035,
-      "encoding_efficiency_mean": 0.517636672966996,
-      "encoding_efficiency_std": 0.014518588606349232,
-      "average_bit_accuracy_mean": 0.7720509052225334,
-      "average_bit_accuracy_std": 0.00867805655511574
+      "average_error_rate_mean": 0.33279532844910914,
+      "average_error_rate_std": 0.011766140617593415,
+      "decode_accuracy_mean": 76.96864506396442,
+      "decode_accuracy_std": 0.8657002065941485,
+      "gc_score_mean": 0.9927083333333334,
+      "gc_score_std": 0.004392326800480819,
+      "stability_score_mean": 0.8994270833333333,
+      "stability_score_std": 0.003464226905899139,
+      "encoding_efficiency_mean": 0.5136386361089562,
+      "encoding_efficiency_std": 0.014820318888213703,
+      "average_bit_accuracy_mean": 0.7696864506396442,
+      "average_bit_accuracy_std": 0.008657002065941465
     },
     {
       "method": "reinforcement_learning_no_homopolymer",
       "seq_length": 128,
-      "average_error_rate_mean": 0.45126570023288193,
-      "average_error_rate_std": 0.002658068915474718,
-      "decode_accuracy_mean": 69.05221572167817,
-      "decode_accuracy_std": 0.2467121435461625,
-      "gc_score_mean": 0.9957291666666667,
-      "gc_score_std": 0.004935016077031125,
-      "stability_score_mean": 0.9215234375,
-      "stability_score_std": 0.0013319491513067061,
-      "encoding_efficiency_mean": 0.3789197153042614,
-      "encoding_efficiency_std": 0.0031895317165372026,
-      "average_bit_accuracy_mean": 0.6905221572167818,
-      "average_bit_accuracy_std": 0.0024671214354616126
+      "average_error_rate_mean": 0.4549786897032602,
+      "average_error_rate_std": 0.012016369131277748,
+      "decode_accuracy_mean": 68.90089215238267,
+      "decode_accuracy_std": 0.712555423018604,
+      "gc_score_mean": 0.9874999999999999,
+      "gc_score_std": 0.013370107165800862,
+      "stability_score_mean": 0.9205338541666667,
+      "stability_score_std": 0.0017770456289962686,
+      "encoding_efficiency_mean": 0.3756100630580799,
+      "encoding_efficiency_std": 0.012100032994150647,
+      "average_bit_accuracy_mean": 0.6890089215238265,
+      "average_bit_accuracy_std": 0.007125554230186018
     },
     {
       "method": "reinforcement_learning_no_homopolymer",
       "seq_length": 256,
-      "average_error_rate_mean": 0.5323425246983268,
-      "average_error_rate_std": 0.017673005042249532,
-      "decode_accuracy_mean": 63.66622623997116,
-      "decode_accuracy_std": 1.1494206684392523,
-      "gc_score_mean": 0.9882291666666667,
-      "gc_score_std": 0.0063818556546840636,
-      "stability_score_mean": 0.9352799479166668,
-      "stability_score_std": 0.0021039628033978123,
-      "encoding_efficiency_mean": 0.29794260782979726,
-      "encoding_efficiency_std": 0.01657839239858463,
-      "average_bit_accuracy_mean": 0.6366622623997116,
-      "average_bit_accuracy_std": 0.011494206684392536
+      "average_error_rate_mean": 0.5332014045904523,
+      "average_error_rate_std": 0.003960958298381545,
+      "decode_accuracy_mean": 63.643011532138,
+      "decode_accuracy_std": 0.2192921346647342,
+      "gc_score_mean": 0.9775260416666667,
+      "gc_score_std": 0.015502164737388736,
+      "stability_score_mean": 0.9350065104166667,
+      "stability_score_std": 0.002363272282466943,
+      "encoding_efficiency_mean": 0.2970931927816252,
+      "encoding_efficiency_std": 0.003530673187449774,
+      "average_bit_accuracy_mean": 0.6364301153213799,
+      "average_bit_accuracy_std": 0.002192921346647357
+    },
+    {
+      "method": "reinforcement_learning_no_homopolymer",
+      "seq_length": 512,
+      "average_error_rate_mean": 0.5838765599862527,
+      "average_error_rate_std": 0.009565747519446164,
+      "decode_accuracy_mean": 60.22526740575008,
+      "decode_accuracy_std": 0.6515848335806705,
+      "gc_score_mean": 0.9896354166666667,
+      "gc_score_std": 0.00362718444718331,
+      "stability_score_mean": 0.9453417968750001,
+      "stability_score_std": 0.0018750678156138625,
+      "encoding_efficiency_mean": 0.2506737802834837,
+      "encoding_efficiency_std": 0.008516357281046948,
+      "average_bit_accuracy_mean": 0.6022526740575008,
+      "average_bit_accuracy_std": 0.006515848335806688
+    },
+    {
+      "method": "reinforcement_learning_no_homopolymer",
+      "seq_length": 1024,
+      "average_error_rate_mean": 0.6277808199582091,
+      "average_error_rate_std": 0.001993923884314258,
+      "decode_accuracy_mean": 57.366301569091455,
+      "decode_accuracy_std": 0.1716020773667121,
+      "gc_score_mean": 0.9911783854166667,
+      "gc_score_std": 0.004329666934145596,
+      "stability_score_mean": 0.9505322265624999,
+      "stability_score_std": 0.0038557362152877345,
+      "encoding_efficiency_mean": 0.2135313383251971,
+      "encoding_efficiency_std": 0.0017252101329874913,
+      "average_bit_accuracy_mean": 0.5736630156909146,
+      "average_bit_accuracy_std": 0.0017160207736671323
     }
   ],
   "redundancy_comparison": {
     "64": [
       {
         "number_of_copies": 1,
-        "single_copy_accuracy": 0.8125,
-        "redundancy_accuracy": 0.8125,
-        "consensus_error_rate": 0.265625,
-        "average_copy_error_rate": 0.265625
+        "single_copy_accuracy": 0.8046875,
+        "redundancy_accuracy": 0.8046875,
+        "consensus_error_rate": 0.28125,
+        "average_copy_error_rate": 0.28125
       },
       {
         "number_of_copies": 2,
-        "single_copy_accuracy": 0.5692307692307692,
-        "redundancy_accuracy": 0.5692307692307692,
-        "consensus_error_rate": 0.6461538461538462,
-        "average_copy_error_rate": 0.3615384615384616
+        "single_copy_accuracy": 0.5859375,
+        "redundancy_accuracy": 0.5859375,
+        "consensus_error_rate": 0.59375,
+        "average_copy_error_rate": 0.32764423076923077
       },
       {
         "number_of_copies": 3,
-        "single_copy_accuracy": 0.75,
-        "redundancy_accuracy": 0.8203125,
-        "consensus_error_rate": 0.234375,
-        "average_copy_error_rate": 0.3143939393939394
+        "single_copy_accuracy": 0.78125,
+        "redundancy_accuracy": 0.875,
+        "consensus_error_rate": 0.171875,
+        "average_copy_error_rate": 0.3072916666666667
       },
       {
         "number_of_copies": 4,
-        "single_copy_accuracy": 0.5923076923076923,
-        "redundancy_accuracy": 0.6796875,
+        "single_copy_accuracy": 0.6076923076923076,
+        "redundancy_accuracy": 0.65625,
         "consensus_error_rate": 0.484375,
-        "average_copy_error_rate": 0.5353583916083916
+        "average_copy_error_rate": 0.5173677884615384
       },
       {
         "number_of_copies": 5,
-        "single_copy_accuracy": 0.890625,
-        "redundancy_accuracy": 0.9375,
-        "consensus_error_rate": 0.078125,
-        "average_copy_error_rate": 0.30482954545454544
+        "single_copy_accuracy": 0.5522388059701493,
+        "redundancy_accuracy": 0.90625,
+        "consensus_error_rate": 0.140625,
+        "average_copy_error_rate": 0.3393154420206659
       }
     ],
     "128": [
@@ -18737,104 +19087,517 @@
       },
       {
         "number_of_copies": 2,
-        "single_copy_accuracy": 0.66796875,
-        "redundancy_accuracy": 0.68359375,
-        "consensus_error_rate": 0.484375,
-        "average_copy_error_rate": 0.6414728682170543
+        "single_copy_accuracy": 0.65,
+        "redundancy_accuracy": 0.65,
+        "consensus_error_rate": 0.5153846153846153,
+        "average_copy_error_rate": 0.5423076923076923
       },
       {
         "number_of_copies": 3,
-        "single_copy_accuracy": 0.5271317829457365,
-        "redundancy_accuracy": 0.751937984496124,
-        "consensus_error_rate": 0.3953488372093023,
-        "average_copy_error_rate": 0.45478036175710596
+        "single_copy_accuracy": 0.5769230769230769,
+        "redundancy_accuracy": 0.6269230769230769,
+        "consensus_error_rate": 0.5615384615384615,
+        "average_copy_error_rate": 0.519953146408299
       },
       {
         "number_of_copies": 4,
-        "single_copy_accuracy": 0.8828125,
-        "redundancy_accuracy": 0.9069767441860465,
-        "consensus_error_rate": 0.13953488372093023,
-        "average_copy_error_rate": 0.328125
+        "single_copy_accuracy": 0.5725190839694656,
+        "redundancy_accuracy": 0.6356589147286822,
+        "consensus_error_rate": 0.5658914728682171,
+        "average_copy_error_rate": 0.4787243559160305
       },
       {
         "number_of_copies": 5,
-        "single_copy_accuracy": 0.8046875,
-        "redundancy_accuracy": 0.7265625,
-        "consensus_error_rate": 0.4296875,
-        "average_copy_error_rate": 0.5208333333333333
+        "single_copy_accuracy": 0.75390625,
+        "redundancy_accuracy": 0.75,
+        "consensus_error_rate": 0.3828125,
+        "average_copy_error_rate": 0.49812500000000004
       }
     ],
     "256": [
       {
         "number_of_copies": 1,
-        "single_copy_accuracy": 0.58984375,
-        "redundancy_accuracy": 0.58984375,
-        "consensus_error_rate": 0.5703125,
-        "average_copy_error_rate": 0.5703125
+        "single_copy_accuracy": 0.61328125,
+        "redundancy_accuracy": 0.61328125,
+        "consensus_error_rate": 0.56640625,
+        "average_copy_error_rate": 0.56640625
       },
       {
         "number_of_copies": 2,
-        "single_copy_accuracy": 0.7198443579766537,
-        "redundancy_accuracy": 0.71875,
-        "consensus_error_rate": 0.40625,
-        "average_copy_error_rate": 0.5363190053501945
+        "single_copy_accuracy": 0.802734375,
+        "redundancy_accuracy": 0.8015564202334631,
+        "consensus_error_rate": 0.28793774319066145,
+        "average_copy_error_rate": 0.47142427884615384
       },
       {
         "number_of_copies": 3,
-        "single_copy_accuracy": 0.5386100386100386,
-        "redundancy_accuracy": 0.60546875,
-        "consensus_error_rate": 0.58203125,
-        "average_copy_error_rate": 0.6015876367438867
+        "single_copy_accuracy": 0.6050583657587548,
+        "redundancy_accuracy": 0.5875486381322957,
+        "consensus_error_rate": 0.5797665369649806,
+        "average_copy_error_rate": 0.5616493432595341
       },
       {
         "number_of_copies": 4,
-        "single_copy_accuracy": 0.5622568093385214,
-        "redundancy_accuracy": 0.7003891050583657,
-        "consensus_error_rate": 0.42412451361867703,
-        "average_copy_error_rate": 0.5067945514923236
+        "single_copy_accuracy": 0.65625,
+        "redundancy_accuracy": 0.673828125,
+        "consensus_error_rate": 0.453125,
+        "average_copy_error_rate": 0.4978803294573644
       },
       {
         "number_of_copies": 5,
-        "single_copy_accuracy": 0.66015625,
-        "redundancy_accuracy": 0.627906976744186,
-        "consensus_error_rate": 0.5077519379844961,
-        "average_copy_error_rate": 0.5852908894151627
+        "single_copy_accuracy": 0.517578125,
+        "redundancy_accuracy": 0.6595330739299611,
+        "consensus_error_rate": 0.4708171206225681,
+        "average_copy_error_rate": 0.5250522907052153
+      }
+    ],
+    "512": [
+      {
+        "number_of_copies": 1,
+        "single_copy_accuracy": 0.5390625,
+        "redundancy_accuracy": 0.5390625,
+        "consensus_error_rate": 0.677734375,
+        "average_copy_error_rate": 0.677734375
+      },
+      {
+        "number_of_copies": 2,
+        "single_copy_accuracy": 0.5968992248062015,
+        "redundancy_accuracy": 0.5980582524271845,
+        "consensus_error_rate": 0.5864077669902913,
+        "average_copy_error_rate": 0.6576823210657033
+      },
+      {
+        "number_of_copies": 3,
+        "single_copy_accuracy": 0.5455426356589147,
+        "redundancy_accuracy": 0.5768482490272373,
+        "consensus_error_rate": 0.6284046692607004,
+        "average_copy_error_rate": 0.6140024564142008
+      },
+      {
+        "number_of_copies": 4,
+        "single_copy_accuracy": 0.6796875,
+        "redundancy_accuracy": 0.6402321083172147,
+        "consensus_error_rate": 0.5338491295938105,
+        "average_copy_error_rate": 0.5825218517248979
+      },
+      {
+        "number_of_copies": 5,
+        "single_copy_accuracy": 0.517578125,
+        "redundancy_accuracy": 0.59375,
+        "consensus_error_rate": 0.5703125,
+        "average_copy_error_rate": 0.6080860894941634
+      }
+    ],
+    "1024": [
+      {
+        "number_of_copies": 1,
+        "single_copy_accuracy": 0.6513671875,
+        "redundancy_accuracy": 0.6513671875,
+        "consensus_error_rate": 0.5146484375,
+        "average_copy_error_rate": 0.5146484375
+      },
+      {
+        "number_of_copies": 2,
+        "single_copy_accuracy": 0.5703125,
+        "redundancy_accuracy": 0.57177734375,
+        "consensus_error_rate": 0.626953125,
+        "average_copy_error_rate": 0.5759160632621951
+      },
+      {
+        "number_of_copies": 3,
+        "single_copy_accuracy": 0.607871720116618,
+        "redundancy_accuracy": 0.6263362487852284,
+        "consensus_error_rate": 0.5374149659863946,
+        "average_copy_error_rate": 0.5984385024814364
+      },
+      {
+        "number_of_copies": 4,
+        "single_copy_accuracy": 0.5650485436893203,
+        "redundancy_accuracy": 0.6025390625,
+        "consensus_error_rate": 0.5810546875,
+        "average_copy_error_rate": 0.6271909309707319
+      },
+      {
+        "number_of_copies": 5,
+        "single_copy_accuracy": 0.5087890625,
+        "redundancy_accuracy": 0.59130859375,
+        "consensus_error_rate": 0.5927734375,
+        "average_copy_error_rate": 0.6221802352117819
       }
     ]
   },
+  "redundancy_scaling": [
+    {
+      "seq_length": 64,
+      "number_of_copies": 1,
+      "decode_accuracy_mean": 76.28505559817685,
+      "decode_accuracy_std": 1.5303143567080082,
+      "error_rate_mean": 0.3448570432501465,
+      "error_rate_std": 0.022639893598493895,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 64,
+      "number_of_copies": 2,
+      "decode_accuracy_mean": 76.48800626456877,
+      "decode_accuracy_std": 1.0666880941263153,
+      "error_rate_mean": 0.34307527195027204,
+      "error_rate_std": 0.015319717638749114,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 64,
+      "number_of_copies": 3,
+      "decode_accuracy_mean": 81.95635076728827,
+      "decode_accuracy_std": 0.9362258164567534,
+      "error_rate_mean": 0.26279271076146077,
+      "error_rate_std": 0.012644069068917262,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 64,
+      "number_of_copies": 4,
+      "decode_accuracy_mean": 83.02402510683761,
+      "decode_accuracy_std": 0.18363772988092902,
+      "error_rate_mean": 0.24504802836052839,
+      "error_rate_std": 0.0015318357467213294,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 64,
+      "number_of_copies": 5,
+      "decode_accuracy_mean": 85.03162757381507,
+      "decode_accuracy_std": 1.1236360213957708,
+      "error_rate_mean": 0.2172266656954157,
+      "error_rate_std": 0.015752185975297876,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 64,
+      "number_of_copies": 7,
+      "decode_accuracy_mean": 86.16425432206681,
+      "decode_accuracy_std": 0.40762467392355306,
+      "error_rate_mean": 0.19932328088578088,
+      "error_rate_std": 0.005721333588755724,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 64,
+      "number_of_copies": 10,
+      "decode_accuracy_mean": 88.71534455128206,
+      "decode_accuracy_std": 0.20001753530182043,
+      "error_rate_mean": 0.16334134615384613,
+      "error_rate_std": 0.0016368138967198071,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 128,
+      "number_of_copies": 1,
+      "decode_accuracy_mean": 70.7191014284051,
+      "decode_accuracy_std": 1.1031729085437523,
+      "error_rate_mean": 0.42822555622114233,
+      "error_rate_std": 0.017169321796639436,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 128,
+      "number_of_copies": 2,
+      "decode_accuracy_mean": 68.91957621507929,
+      "decode_accuracy_std": 1.3036700221286037,
+      "error_rate_mean": 0.45745189472434333,
+      "error_rate_std": 0.020189419081028802,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 128,
+      "number_of_copies": 3,
+      "decode_accuracy_mean": 72.98919241613258,
+      "decode_accuracy_std": 1.225276534808452,
+      "error_rate_mean": 0.39579206313508913,
+      "error_rate_std": 0.0167949884858821,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 128,
+      "number_of_copies": 4,
+      "decode_accuracy_mean": 75.44447565717552,
+      "decode_accuracy_std": 1.13551605090043,
+      "error_rate_mean": 0.3575999055853707,
+      "error_rate_std": 0.015493332638372386,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 128,
+      "number_of_copies": 5,
+      "decode_accuracy_mean": 76.19707475863389,
+      "decode_accuracy_std": 1.0986989609430966,
+      "error_rate_mean": 0.34910714341597365,
+      "error_rate_std": 0.017840481270452166,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 128,
+      "number_of_copies": 7,
+      "decode_accuracy_mean": 78.17029812822712,
+      "decode_accuracy_std": 1.0814072165737045,
+      "error_rate_mean": 0.3182411123790135,
+      "error_rate_std": 0.01464840517879208,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 128,
+      "number_of_copies": 10,
+      "decode_accuracy_mean": 79.38954699612403,
+      "decode_accuracy_std": 0.7079944762057674,
+      "error_rate_mean": 0.3006034274995031,
+      "error_rate_std": 0.010604741049836658,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 256,
+      "number_of_copies": 1,
+      "decode_accuracy_mean": 62.37209606176779,
+      "decode_accuracy_std": 1.4446063758545866,
+      "error_rate_mean": 0.5508692407796605,
+      "error_rate_std": 0.01922569982064535,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 256,
+      "number_of_copies": 2,
+      "decode_accuracy_mean": 63.87710697267295,
+      "decode_accuracy_std": 0.630117119308166,
+      "error_rate_mean": 0.529026264352337,
+      "error_rate_std": 0.009414904276961022,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 256,
+      "number_of_copies": 3,
+      "decode_accuracy_mean": 67.48800806949366,
+      "decode_accuracy_std": 0.9875321885936588,
+      "error_rate_mean": 0.47769707429475433,
+      "error_rate_std": 0.0155868693062906,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 256,
+      "number_of_copies": 4,
+      "decode_accuracy_mean": 68.74922600248098,
+      "decode_accuracy_std": 0.3167499632976695,
+      "error_rate_mean": 0.45881441749448243,
+      "error_rate_std": 0.004817703014383979,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 256,
+      "number_of_copies": 5,
+      "decode_accuracy_mean": 69.68664102043681,
+      "decode_accuracy_std": 1.136647149552258,
+      "error_rate_mean": 0.4451599510689275,
+      "error_rate_std": 0.01655837097417972,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 256,
+      "number_of_copies": 7,
+      "decode_accuracy_mean": 71.81843839686155,
+      "decode_accuracy_std": 1.01671650314606,
+      "error_rate_mean": 0.41271138173578414,
+      "error_rate_std": 0.014282671187933478,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 256,
+      "number_of_copies": 10,
+      "decode_accuracy_mean": 73.60606335450949,
+      "decode_accuracy_std": 0.2072332890626443,
+      "error_rate_mean": 0.38822394288234485,
+      "error_rate_std": 0.003868779348132175,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 512,
+      "number_of_copies": 1,
+      "decode_accuracy_mean": 59.84890130614161,
+      "decode_accuracy_std": 0.45605559016484204,
+      "error_rate_mean": 0.5903049917657454,
+      "error_rate_std": 0.007537966180763809,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 512,
+      "number_of_copies": 2,
+      "decode_accuracy_mean": 60.350013308196424,
+      "decode_accuracy_std": 0.36598358145747073,
+      "error_rate_mean": 0.5831783244531786,
+      "error_rate_std": 0.0038486096986456476,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 512,
+      "number_of_copies": 3,
+      "decode_accuracy_mean": 61.70341867193537,
+      "decode_accuracy_std": 0.4716777248626878,
+      "error_rate_mean": 0.5622097852857545,
+      "error_rate_std": 0.006887037151583517,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 512,
+      "number_of_copies": 4,
+      "decode_accuracy_mean": 63.635823086583024,
+      "decode_accuracy_std": 0.39799597290813016,
+      "error_rate_mean": 0.5330531050933801,
+      "error_rate_std": 0.0070330086810462475,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 512,
+      "number_of_copies": 5,
+      "decode_accuracy_mean": 64.93302492380384,
+      "decode_accuracy_std": 0.08565382095937685,
+      "error_rate_mean": 0.5145860150762042,
+      "error_rate_std": 0.0019429325122386953,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 512,
+      "number_of_copies": 7,
+      "decode_accuracy_mean": 66.35980293888362,
+      "decode_accuracy_std": 0.3740451160866483,
+      "error_rate_mean": 0.4921823177799294,
+      "error_rate_std": 0.005605788184811535,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 512,
+      "number_of_copies": 10,
+      "decode_accuracy_mean": 67.26919561840067,
+      "decode_accuracy_std": 0.23911520649633627,
+      "error_rate_mean": 0.47818560268007265,
+      "error_rate_std": 0.003875198849322792,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 1024,
+      "number_of_copies": 1,
+      "decode_accuracy_mean": 57.16335291421964,
+      "decode_accuracy_std": 0.5866354447528672,
+      "error_rate_mean": 0.6313676190430102,
+      "error_rate_std": 0.00932064427590946,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 1024,
+      "number_of_copies": 2,
+      "decode_accuracy_mean": 57.596070966241506,
+      "decode_accuracy_std": 0.22938176344476263,
+      "error_rate_mean": 0.6259788798950972,
+      "error_rate_std": 0.003670209692593246,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 1024,
+      "number_of_copies": 3,
+      "decode_accuracy_mean": 58.97627247094683,
+      "decode_accuracy_std": 0.30367962961906925,
+      "error_rate_mean": 0.6034389618191827,
+      "error_rate_std": 0.0033621971610390423,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 1024,
+      "number_of_copies": 4,
+      "decode_accuracy_mean": 60.37160743734396,
+      "decode_accuracy_std": 0.42342959902031224,
+      "error_rate_mean": 0.5827295226437027,
+      "error_rate_std": 0.006870838697704057,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 1024,
+      "number_of_copies": 5,
+      "decode_accuracy_mean": 60.552977152938446,
+      "decode_accuracy_std": 0.18764636202347693,
+      "error_rate_mean": 0.5795639376200458,
+      "error_rate_std": 0.0024958348690604856,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 1024,
+      "number_of_copies": 7,
+      "decode_accuracy_mean": 61.80246012299301,
+      "decode_accuracy_std": 0.242592907898732,
+      "error_rate_mean": 0.5603897041333924,
+      "error_rate_std": 0.004260014597873801,
+      "num_seeds": 3
+    },
+    {
+      "seq_length": 1024,
+      "number_of_copies": 10,
+      "decode_accuracy_mean": 62.96398802390494,
+      "decode_accuracy_std": 0.1782918442790101,
+      "error_rate_mean": 0.5415833204411383,
+      "error_rate_std": 0.003422130462134572,
+      "num_seeds": 3
+    }
+  ],
   "unseen_test_results": {
     "64": {
-      "average_bit_accuracy": 0.7661798367211147,
-      "average_error_rate": 0.3394066821704415,
-      "average_gc_content": 0.48859375,
-      "average_stability": 0.8986328125,
-      "average_homopolymer": 0.060859375,
-      "decode_accuracy": 76.61798367211146,
-      "gc_score": 0.9771875,
-      "stability_score": 0.8986328125,
-      "encoding_efficiency": 0.5061332803937105
+      "average_bit_accuracy": 0.789215735215454,
+      "average_error_rate": 0.3068053176566264,
+      "average_gc_content": 0.488515625,
+      "average_stability": 0.8926953125,
+      "average_homopolymer": 0.061015625,
+      "decode_accuracy": 78.9215735215454,
+      "gc_score": 0.97703125,
+      "stability_score": 0.8926953125,
+      "encoding_efficiency": 0.5470801508730687
     },
     "128": {
-      "average_bit_accuracy": 0.7113877897255486,
-      "average_error_rate": 0.4229398604355541,
-      "average_gc_content": 0.489765625,
-      "average_stability": 0.91849609375,
-      "average_homopolymer": 0.0351953125,
-      "decode_accuracy": 71.13877897255486,
-      "gc_score": 0.97953125,
-      "stability_score": 0.91849609375,
-      "encoding_efficiency": 0.4105135372234678
+      "average_bit_accuracy": 0.7271869679850171,
+      "average_error_rate": 0.4006197192819163,
+      "average_gc_content": 0.49875,
+      "average_stability": 0.9225390625,
+      "average_homopolymer": 0.035078125,
+      "decode_accuracy": 72.71869679850171,
+      "gc_score": 0.9975,
+      "stability_score": 0.9225390625,
+      "encoding_efficiency": 0.4358615290053917
     },
     "256": {
-      "average_bit_accuracy": 0.6402910687547869,
-      "average_error_rate": 0.5259358645496477,
-      "average_gc_content": 0.4894921875,
-      "average_stability": 0.9341015625,
+      "average_bit_accuracy": 0.6291690536180756,
+      "average_error_rate": 0.5420713803205292,
+      "average_gc_content": 0.495625,
+      "average_stability": 0.93078125,
       "average_homopolymer": 0.020625,
-      "decode_accuracy": 64.02910687547869,
-      "gc_score": 0.978984375,
-      "stability_score": 0.9341015625,
-      "encoding_efficiency": 0.30353903194582016
+      "decode_accuracy": 62.916905361807565,
+      "gc_score": 0.99125,
+      "stability_score": 0.93078125,
+      "encoding_efficiency": 0.2881145162683644
+    },
+    "512": {
+      "average_bit_accuracy": 0.6016729032754735,
+      "average_error_rate": 0.5877104874935624,
+      "average_gc_content": 0.498486328125,
+      "average_stability": 0.941142578125,
+      "average_homopolymer": 0.011328125,
+      "decode_accuracy": 60.16729032754735,
+      "gc_score": 0.99697265625,
+      "stability_score": 0.941142578125,
+      "encoding_efficiency": 0.24806342797977798
+    },
+    "1024": {
+      "average_bit_accuracy": 0.5766238344657887,
+      "average_error_rate": 0.6234533905826002,
+      "average_gc_content": 0.497421875,
+      "average_stability": 0.9459130859375,
+      "average_homopolymer": 0.006064453125,
+      "decode_accuracy": 57.66238344657887,
+      "gc_score": 0.99484375,
+      "stability_score": 0.9459130859375,
+      "encoding_efficiency": 0.21712574977735274
     }
   }
 }

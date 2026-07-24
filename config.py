@@ -17,10 +17,10 @@ class Config:
 
     # reproducibility
     seed: int = 42
-    number_of_seeds: int = 5                             # independent runs for statistics
+    number_of_seeds: int = 7                             # independent runs for statistics
 
     # sequence parameters
-    sequence_lengths: List[int] = field(default_factory=lambda: [64, 128, 256])
+    sequence_lengths: List[int] = field(default_factory=lambda: [64, 128, 256, 512, 1024])
     trials_per_length: int = 100                         # evaluation trials per length
 
     # error simulation probabilities

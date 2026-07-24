@@ -283,6 +283,77 @@ def plot_ablation_comparison(statistics: List[Dict], config: Config):
     _save_figure(figure, config.results_path("ablation_comparison.png"))
 
 
+# redundancy scaling plot
+
+LENGTH_COLORS = {
+    64: "#e74c3c",
+    128: "#3498db",
+    256: "#2ecc71",
+    512: "#f39c12",
+    1024: "#9b59b6",
+}
+
+LENGTH_MARKERS = {
+    64: "o",
+    128: "s",
+    256: "D",
+    512: "^",
+    1024: "v",
+}
+
+
+def plot_redundancy_scaling(redundancy_summary: List[Dict], config: Config):
+    """
+    Line chart: decode accuracy (y) vs number of copies (x),
+    one line per sequence length with error bars.
+    """
+    from collections import defaultdict
+
+    if not redundancy_summary:
+        return
+
+    # group by sequence length
+    data_by_length = defaultdict(lambda: {"copies": [], "means": [], "stds": []})
+    for entry in redundancy_summary:
+        sl = entry["seq_length"]
+        data_by_length[sl]["copies"].append(entry["number_of_copies"])
+        data_by_length[sl]["means"].append(entry["decode_accuracy_mean"])
+        data_by_length[sl]["stds"].append(entry["decode_accuracy_std"])
+
+    figure, axis = plt.subplots(figsize=(10, 6))
+
+    for seq_length in sorted(data_by_length.keys()):
+        d = data_by_length[seq_length]
+        color = LENGTH_COLORS.get(seq_length, "#95a5a6")
+        marker = LENGTH_MARKERS.get(seq_length, "o")
+        axis.errorbar(
+            d["copies"], d["means"], yerr=d["stds"],
+            marker=marker, linewidth=2, markersize=8, capsize=4,
+            color=color, label=f"Length {seq_length}",
+            alpha=0.85,
+        )
+
+    axis.set_xlabel("Number of Redundant Copies", fontsize=12)
+    axis.set_ylabel("Decode Accuracy (%)", fontsize=12)
+    axis.set_title("Decode Accuracy versus Number of Redundant Copies", fontsize=14)
+    axis.legend(fontsize=10)
+    axis.grid(True, alpha=0.3)
+    axis.set_xticks(sorted(set(e["number_of_copies"] for e in redundancy_summary)))
+
+    # annotate 100% points
+    for entry in redundancy_summary:
+        if entry["decode_accuracy_mean"] >= 99.99:
+            axis.annotate(
+                "100%",
+                xy=(entry["number_of_copies"], entry["decode_accuracy_mean"]),
+                xytext=(5, 10), textcoords="offset points",
+                fontsize=9, fontweight="bold", color="#27ae60",
+            )
+
+    figure.tight_layout()
+    _save_figure(figure, config.results_path("redundancy_scaling.png"))
+
+
 def generate_all_plots(
     epoch_rewards: List[float],
     rolling_rewards: List[float],
@@ -293,8 +364,9 @@ def generate_all_plots(
     config: Config,
     ablation_statistics: List[Dict] = None,
     validation_rewards: List[float] = None,
+    redundancy_summary: List[Dict] = None,
 ):
-    """Generate all plots including optional ablation and validation charts."""
+    """Generate all plots including optional ablation, validation, and redundancy charts."""
     print("\nGenerating plots...")
     plot_reward_versus_epochs(epoch_rewards, config)
     plot_rolling_reward(rolling_rewards, config)
@@ -308,4 +380,6 @@ def generate_all_plots(
         plot_ablation_comparison(ablation_statistics, config)
     if validation_rewards:
         plot_validation_reward(validation_rewards, config)
+    if redundancy_summary:
+        plot_redundancy_scaling(redundancy_summary, config)
     print("  All plots saved.\n")

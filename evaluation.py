@@ -367,3 +367,112 @@ def export_statistics_csv(rows: List[Dict], path: str):
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
+
+
+# redundancy scaling evaluation
+
+def run_redundancy_scaling(
+    config: Config,
+    agent: PPOAgent,
+    seeds: list,
+    copy_counts: list = None,
+) -> List[Dict]:
+    """
+    Systematically evaluate decode accuracy across different numbers of
+    redundant copies, averaged over multiple seeds and trials.
+
+    Returns a list of dictionaries with columns:
+        seq_length, number_of_copies, decode_accuracy_mean, decode_accuracy_std,
+        error_rate_mean, error_rate_std, seed (per-seed rows for aggregation)
+    """
+    from rl_environment import _compute_dibit_distribution
+
+    if copy_counts is None:
+        copy_counts = [1, 2, 3, 4, 5, 7, 10]
+
+    all_rows = []
+
+    for seed in seeds:
+        for sequence_length in config.sequence_lengths:
+            dataset = generate_frozen_dataset(
+                sequence_length, config.trials_per_length, seed
+            )
+
+            for n_copies in copy_counts:
+                test_config = Config(
+                    number_of_copies=n_copies,
+                    substitution_rate=config.substitution_rate,
+                    insertion_rate=config.insertion_rate,
+                    deletion_rate=config.deletion_rate,
+                )
+
+                trial_accuracies = []
+                trial_error_rates = []
+                random_generator = np.random.default_rng(
+                    seed * 100000 + sequence_length * 100 + n_copies
+                )
+
+                for binary_bits in dataset:
+                    dibit_distribution = _compute_dibit_distribution(binary_bits)
+                    state = np.array([
+                        dibit_distribution[0], dibit_distribution[1],
+                        dibit_distribution[2], dibit_distribution[3],
+                        float(np.max(dibit_distribution)),
+                        sequence_length / 256.0,
+                    ], dtype=np.float32)
+
+                    action, _, _ = agent.select_action(state)
+
+                    result = encode_with_redundancy(
+                        binary_bits, action, random_generator, test_config
+                    )
+                    trial_accuracies.append(result["redundancy_accuracy"])
+                    trial_error_rates.append(result["consensus_error_rate"])
+
+                all_rows.append({
+                    "seed": seed,
+                    "seq_length": sequence_length,
+                    "number_of_copies": n_copies,
+                    "decode_accuracy": float(np.mean(trial_accuracies)) * 100.0,
+                    "error_rate": float(np.mean(trial_error_rates)),
+                })
+
+    return all_rows
+
+
+def aggregate_redundancy_scaling(rows: List[Dict]) -> List[Dict]:
+    """Aggregate per-seed redundancy scaling rows into mean±std summaries."""
+    from collections import defaultdict
+
+    grouped = defaultdict(list)
+    for row in rows:
+        key = (row["seq_length"], row["number_of_copies"])
+        grouped[key].append(row)
+
+    summary = []
+    for (seq_length, n_copies), seed_rows in sorted(grouped.items()):
+        accuracies = [r["decode_accuracy"] for r in seed_rows]
+        error_rates = [r["error_rate"] for r in seed_rows]
+        summary.append({
+            "seq_length": seq_length,
+            "number_of_copies": n_copies,
+            "decode_accuracy_mean": float(np.mean(accuracies)),
+            "decode_accuracy_std": float(np.std(accuracies)),
+            "error_rate_mean": float(np.mean(error_rates)),
+            "error_rate_std": float(np.std(error_rates)),
+            "num_seeds": len(seed_rows),
+        })
+
+    return summary
+
+
+def export_redundancy_csv(rows: List[Dict], path: str):
+    """Export redundancy scaling results to CSV."""
+    if not rows:
+        return
+    os.makedirs(os.path.dirname(path) if os.path.dirname(path) else ".", exist_ok=True)
+    fieldnames = sorted(rows[0].keys())
+    with open(path, "w", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)

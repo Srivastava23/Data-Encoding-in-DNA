@@ -60,7 +60,7 @@ from config import Config
 
 config = Config(
     ppo_training_epochs=100000,
-    number_of_seeds=3,
+    number_of_seeds=7,
     ppo_learning_rate=3e-4,
     ppo_batch_size=64,
     ppo_hidden_dimension=64,

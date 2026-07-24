@@ -38,6 +38,7 @@ from evaluation import (
     run_comparison, run_ablation_comparison,
     compute_statistics, export_results_csv, export_statistics_csv,
     generate_frozen_dataset, evaluate_reinforcement_learning, _aggregate,
+    run_redundancy_scaling, aggregate_redundancy_scaling, export_redundancy_csv,
 )
 from redundancy import evaluate_redundancy_comparison
 from visualization import generate_all_plots
@@ -235,6 +236,24 @@ def main():
                   f"{entry['redundancy_accuracy']*100:.2f}% accuracy")
 
     # ================================================================
+    # Phase 5.5: Systematic Redundancy Scaling (1-10 copies)
+    # ================================================================
+    print("\n" + "=" * 60)
+    print("  Phase 5.5: Systematic Redundancy Scaling (1-10 copies)")
+    print("=" * 60)
+
+    redundancy_rows = run_redundancy_scaling(
+        config, agent_for_test, seeds,
+        copy_counts=[1, 2, 3, 4, 5, 7, 10],
+    )
+    redundancy_summary = aggregate_redundancy_scaling(redundancy_rows)
+
+    for entry in redundancy_summary:
+        marker = " ★" if entry["decode_accuracy_mean"] >= 99.99 else ""
+        print(f"  Length {entry['seq_length']:>4}  {entry['number_of_copies']:>2} copies: "
+              f"{entry['decode_accuracy_mean']:>7.2f}% ± {entry['decode_accuracy_std']:.2f}%{marker}")
+
+    # ================================================================
     # Phase 6: Compute statistics
     # ================================================================
     print("\n" + "=" * 60)
@@ -248,12 +267,18 @@ def main():
     csv_path = config.results_path(config.csv_filename)
     statistics_path = config.results_path(config.statistics_filename)
     ablation_path = config.results_path("ablation_results.csv")
+    redundancy_path = config.results_path("redundancy_scaling.csv")
+    redundancy_raw_path = config.results_path("redundancy_scaling_raw.csv")
     export_results_csv(all_rows, csv_path)
     export_statistics_csv(statistics, statistics_path)
     export_statistics_csv(ablation_statistics, ablation_path)
-    print(f"  Results CSV:     {csv_path}")
-    print(f"  Statistics CSV:  {statistics_path}")
-    print(f"  Ablation CSV:    {ablation_path}")
+    export_redundancy_csv(redundancy_summary, redundancy_path)
+    export_redundancy_csv(redundancy_rows, redundancy_raw_path)
+    print(f"  Results CSV:          {csv_path}")
+    print(f"  Statistics CSV:       {statistics_path}")
+    print(f"  Ablation CSV:         {ablation_path}")
+    print(f"  Redundancy CSV:       {redundancy_path}")
+    print(f"  Redundancy Raw CSV:   {redundancy_raw_path}")
 
     # ================================================================
     # Phase 7: Generate plots
@@ -282,6 +307,7 @@ def main():
             config=config,
             ablation_statistics=ablation_statistics,
             validation_rewards=last_training_data.get("validation_rewards", []),
+            redundancy_summary=redundancy_summary,
         )
 
     # ================================================================
@@ -316,6 +342,11 @@ def main():
             for stat in ablation_statistics
         ],
         "redundancy_comparison": redundancy_comparison,
+        "redundancy_scaling": [
+            {key: (float(value) if isinstance(value, (np.floating, float)) else value)
+             for key, value in entry.items()}
+            for entry in redundancy_summary
+        ],
         "unseen_test_results": unseen_results,
     }
 

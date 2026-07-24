@@ -20,3 +20,8 @@ Thumbs.db
 
 # results (uncomment to track)
 # results/checkpoints/
+results/colab_trained_models.zip
+results/colab_export.json
+results/checkpoints/
+results/results/
+dna_project.zip

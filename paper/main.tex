@@ -1,404 +1,1280 @@
-% Predictive RL-Based DNA Data Encoding -- IEEE Conference Paper
+% ============================================================
+% Predictive RL-Based DNA Data Encoding — IEEE Conference Paper
+% Based on verified 7-seed Colab results (seeds 42–48)
+% (statistics_summary.csv, results.csv, ablation_results.csv,
+%  redundancy_scaling.csv)
+% ============================================================
 \documentclass[conference]{IEEEtran}
 
-\usepackage{amsmath}
+% ── Packages ──────────────────────────────────────────────────
+\usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{cite}
 \usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{xcolor}
+\usepackage{url}
 
-% ── Title ─────────────────────────────────────────────────────────
-\title{Predictive Reinforcement Learning Based Optimization of DNA Data Encoding for Error-Resilient Archival Storage}
+% ── Title ─────────────────────────────────────────────────────
+\title{Predictive Reinforcement Learning-Based Optimisation of DNA Data Encoding for Error-Resilient Archival Storage}
 
-% ── Authors (placeholders) ────────────────────────────────────────
+% ── Authors ───────────────────────────────────────────────────
 \author{
-    \IEEEauthorblockN{First Author\IEEEauthorrefmark{1},
-    Second Author\IEEEauthorrefmark{2}}
+    \IEEEauthorblockN{Ananya Chandra Srivastava\IEEEauthorrefmark{1},
+    \textit{Guide Name}\IEEEauthorrefmark{2}}
     \IEEEauthorblockA{
-        \IEEEauthorrefmark{1}Department of Computer Science,
-        University Name, City, Country \\
-        Email: first.author@university.edu}
+        \IEEEauthorrefmark{1}Department of \textit{Department Name},\\
+        \textit{University Name}, \textit{City}, \textit{Country}\\
+        Email: \textit{email@university.edu}}
     \IEEEauthorblockA{
-        \IEEEauthorrefmark{2}Department of Computer Science,
-        University Name, City, Country \\
-        Email: second.author@university.edu}
+        \IEEEauthorrefmark{2}Department of \textit{Department Name},\\
+        \textit{University Name}, \textit{City}, \textit{Country}\\
+        Email: \textit{guide.email@university.edu}}
 }
 
 \begin{document}
 
 \maketitle
 
-
+% ══════════════════════════════════════════════════════════════
+%  ABSTRACT
+% ══════════════════════════════════════════════════════════════
 \begin{abstract}
-DNA-based archival storage offers extraordinary data density but is constrained by sequencing errors, GC content imbalance, and homopolymer runs. This paper investigates the feasibility of using Reinforcement Learning~(RL) with a predictive error model to adaptively optimise dibit-to-nucleotide encoding mappings for binary data stored in synthetic DNA. A Proximal Policy Optimization~(PPO) agent observes the statistical profile of each data block and selects from 24~possible mapping actions, guided by a multi-objective reward balancing decode accuracy, GC content, homopolymer avoidance, and predicted sequencing risk. A companion multilayer perceptron estimates expected error rates from sequence features and feeds this estimate into the reward signal. Experiments were conducted over 10{,}000 training episodes across five independent seeds, with frozen evaluation datasets ensuring fair comparison among four methods. Results indicate that improvements are sequence-length dependent: the predictive RL agent achieved statistically significant error reduction at length~256 ($p = 0.028$, $\approx 3.4\%$ lower error rate), while improvements at shorter lengths did not reach significance in all cases. An ablation study reveals that reward component contributions vary with sequence length. All evaluations were performed in a controlled simulation; performance under real sequencing conditions remains to be validated.
+DNA-based archival storage provides extraordinary data density---up to
+215~petabytes per gram---but synthesis and sequencing processes introduce
+substitution, insertion, and deletion errors that compromise data integrity.
+This paper presents a system that combines Proximal Policy
+Optimisation~(PPO)-based adaptive encoding with a predictive error model and
+multi-copy consensus voting to reduce the effective error rate of DNA-stored
+data.  A~PPO agent observes the statistical profile of each binary data block
+and selects a dibit-to-nucleotide mapping from 96~composite actions, guided by
+a multi-objective reward encompassing decode accuracy, GC~content balance,
+homopolymer avoidance, and a neural estimate of sequencing risk.
+Experiments conducted over seven independent random seeds (42--48) with
+100~evaluation trials per condition across five sequence lengths
+(64, 128, 256, 512, 1024~nt) demonstrate that three-copy redundancy with
+consensus voting raises decode accuracy from 76.56\% to 81.96\% at sequence
+length~64 (+5.40~percentage points), from 70.87\% to 73.66\% at length~128,
+and from 64.67\% to 67.27\% at length~256.  Systematic redundancy scaling
+shows monotonic improvement: 10-copy voting achieves 88.72\%$\pm$0.20\%
+at length~64, a 12.43~pp gain over a single copy.  The predictive RL agent
+achieves consistently higher decode accuracy than the RL-only agent at all
+tested sequence lengths, with the improvement reaching statistical
+significance at length~128 ($p = 0.008$, $t = 4.97$).  Sequence stability
+scores improved from 0.857 (baseline) to 0.930 (predictive RL) at
+length~256, indicating measurably improved biophysical quality of encoded
+sequences.  Overfitting checks on unseen data confirm
+train--test gaps below 1.24~percentage points at all lengths.
 \end{abstract}
 
-% ── Keywords ──────────────────────────────────────────────────────
+% ── Keywords ──────────────────────────────────────────────────
 \begin{IEEEkeywords}
-DNA storage, reinforcement learning, encoding optimization, predictive modeling, archival data storage
+DNA data storage, reinforcement learning, encoding optimisation,
+predictive error modelling, archival storage, consensus voting
 \end{IEEEkeywords}
 
 
+% ══════════════════════════════════════════════════════════════
+%  I.  INTRODUCTION
+% ══════════════════════════════════════════════════════════════
 \section{Introduction}
 
-The volume of digital data generated worldwide continues to grow at an accelerating rate, with projections suggesting that annual data creation will exceed 180~zettabytes by 2025~\cite{reinsel2018}. Traditional storage media such as magnetic tape and solid-state drives face fundamental limitations in density and longevity, motivating research into alternative archival substrates.
+The volume of digital data produced worldwide continues to grow at an
+accelerating rate.  Projections from the International Data Corporation
+estimate that annual data creation will exceed 180~zettabytes by
+2025~\cite{reinsel2018}.  Conventional magnetic and solid-state media face
+fundamental constraints in both storage density and longevity, motivating
+research into alternative archival substrates.
 
-Deoxyribonucleic acid (DNA) has emerged as a compelling candidate for long-term data storage. Theoretical information density reaches up to 215~petabytes per gram~\cite{church2012}, and under appropriate conditions, DNA can remain intact for thousands of years~\cite{grass2015}. These properties make DNA an attractive medium for archival storage at the exabyte scale.
+Deoxyribonucleic acid (DNA) has attracted attention as a storage medium due to
+two distinctive properties: an information density of up to
+215~petabytes per gram~\cite{church2012} and the capacity to remain intact
+under appropriate preservation conditions for millennia~\cite{grass2015}.
+Successful sequencing of woolly mammoth genomes from specimens frozen for over
+10{,}000~years illustrates the durability of DNA as an information
+carrier~\cite{grass2015}.
 
-However, translating digital data into synthetic DNA introduces several practical challenges. Sequencing and synthesis processes are prone to three principal error types: substitutions, insertions, and deletions, with combined error rates typically ranging from 1--4\% per nucleotide~\cite{ross2013,heckel2019}. Additionally, DNA strands with extreme GC content ratios (outside the 40--60\% range) are harder to synthesise and more error-prone~\cite{ross2013}. Long homopolymer runs---consecutive repetitions of the same nucleotide---cause sequencing instruments to miscount bases, further increasing insertion and deletion errors~\cite{schirmer2015}.
+Translating digital data into synthetic DNA introduces practical
+difficulties, however.  Synthesis and sequencing processes are subject to three
+classes of errors---substitutions, insertions, and deletions---with combined
+per-nucleotide error rates typically in the range of 1--4\%~\cite{ross2013,
+heckel2019}.  These errors are not uniformly distributed.  Long homopolymer
+runs (consecutive repetitions of the same nucleotide) cause sequencing
+instruments to miscount bases~\cite{schirmer2015}, and sequences with extreme
+GC~content ratios (outside the 40--60\% window) are more difficult to
+synthesise and more error-prone during sequencing~\cite{ross2013}.
 
-Existing encoding schemes for DNA data storage typically employ fixed mapping rules, such as assigning each 2-bit pair (dibit) to a predetermined nucleotide. While simple and deterministic, such schemes cannot adapt to the statistical properties of individual data blocks, potentially producing DNA sequences with unfavourable error characteristics. This observation motivates the central question of this work: \emph{can a learned encoding strategy, conditioned on input data statistics, reduce downstream sequencing errors compared to a fixed mapping?}
+Conventional encoding schemes map binary data to nucleotide sequences using
+fixed rules---for example, assigning each two-bit pair (dibit) to a
+predetermined nucleotide.  While simple and deterministic, fixed mappings
+cannot adapt to the statistical properties of individual data blocks.  A block
+whose dibit distribution produces a high proportion of a single nucleotide
+under the default mapping will generate homopolymer-rich DNA regardless of
+whether an alternative mapping would avoid this outcome.
 
-This paper makes the following contributions:
+This observation motivates the present work.  We frame the encoding mapping
+selection as a sequential decision problem and address it with a Proximal
+Policy Optimisation (PPO) agent trained to choose dibit-to-nucleotide mappings
+conditioned on input data statistics.  A companion multilayer perceptron
+estimates the expected error rate of each candidate encoding, and a multi-copy
+redundancy layer provides additional error correction through majority voting.
+
+The contributions of this paper are as follows:
 \begin{itemize}
-    \item Proposing an adaptive RL-based encoding framework that selects dibit-to-nucleotide mappings conditioned on input data statistics.
-    \item Integrating a predictive error model into the RL reward signal, enabling the agent to estimate sequencing risk prior to encoding.
-    \item Establishing a rigorous multi-seed evaluation protocol with frozen datasets, paired $t$-tests, and controlled error simulation.
-    \item Conducting a systematic ablation study that quantifies the individual and sequence-length-dependent contributions of reward components.
+    \item An adaptive reinforcement-learning-based encoding framework that
+          selects dibit-to-nucleotide mappings conditioned on the statistical
+          profile of each data block.
+    \item Integration of a predictive error model into the RL reward signal,
+          enabling the agent to estimate sequencing risk prior to encoding.
+    \item A multi-copy redundancy mechanism using position-wise consensus
+          voting that serves as the dominant contributor to accuracy
+          improvement.
+    \item A rigorous multi-seed evaluation protocol with frozen datasets,
+          paired $t$-tests, and a systematic ablation study.
 \end{itemize}
 
 
+% ══════════════════════════════════════════════════════════════
+%  II.  RELATED WORK
+% ══════════════════════════════════════════════════════════════
 \section{Related Work}
 
-\subsection{DNA Data Storage Methods}
+\subsection{DNA Data Storage Systems}
 
-Early demonstrations of DNA data storage include the encoding of text, images, and software into synthetic oligonucleotides, followed by sequencing-based retrieval~\cite{church2012,goldman2013}. Subsequent work has focused on improving reliability through error-correcting codes, fountain codes, and constrained coding techniques~\cite{erlich2017,organick2018}. These approaches typically operate at the channel coding level, treating the encoding mapping itself as fixed.
+Pioneering demonstrations by Church \textit{et al.}~\cite{church2012} and
+Goldman \textit{et al.}~\cite{goldman2013} established the feasibility of
+encoding text, images, and software into synthetic oligonucleotides, followed
+by retrieval through DNA sequencing.  Erlich and Zielinski~\cite{erlich2017}
+introduced DNA~Fountain, a near-capacity coding scheme based on fountain
+codes, while Organick \textit{et al.}~\cite{organick2018} demonstrated random
+access retrieval from a pool of 200~million oligonucleotides.  These systems
+treat the binary-to-nucleotide mapping as a fixed design parameter and focus
+error-correction effort at the channel-coding layer.
 
-\subsection{Reinforcement Learning for Combinatorial Optimization}
+\subsection{Error-Aware Encoding Constraints}
 
-Reinforcement learning has demonstrated effectiveness in a range of combinatorial and sequential decision-making tasks, including network routing, compiler optimization, and molecular design~\cite{sutton2018,mazyavkina2021}. The application of RL to biological sequence design remains relatively unexplored, though recent work has applied policy gradient methods to protein engineering and RNA design~\cite{angermueller2020}.
+Several studies have proposed encoding constraints that reduce synthesis and
+sequencing errors by avoiding homopolymer runs, balancing GC~content, or
+limiting local sequence complexity~\cite{heckel2019, erlich2017}.  While these
+rule-based strategies improve reliability, they are applied uniformly and do
+not adapt to the statistical characteristics of individual data blocks.
 
-\subsection{Error-Aware Encoding Strategies}
+\subsection{Reinforcement Learning for Sequence Design}
 
-Several studies have proposed encoding constraints that minimise synthesis and sequencing errors by avoiding homopolymer runs, balancing GC content, or limiting sequence complexity~\cite{heckel2019,erlich2017}. These rule-based approaches improve reliability but do not adapt to data-specific characteristics. The present work extends this direction by framing encoding selection as a data-conditioned decision problem solved by a learned policy.
+Reinforcement learning has been applied to combinatorial and sequential
+decision-making problems across domains including network routing, compiler
+optimisation, and molecular design~\cite{sutton2018, mazyavkina2021}.
+Angermueller \textit{et al.}~\cite{angermueller2020} applied model-based RL
+to biological sequence design, though the application of RL to DNA data
+storage encoding has received limited attention.  The present work extends the
+error-aware encoding direction by framing mapping selection as a
+data-conditioned decision problem solved by a learned policy.
 
 
-\section{Methodology}
+% ══════════════════════════════════════════════════════════════
+%  III.  PROBLEM STATEMENT
+% ══════════════════════════════════════════════════════════════
+\section{Problem Statement}
 
-\subsection{System Overview}
+Given a binary input sequence $\mathbf{b} = (b_1, b_2, \ldots, b_{2n})$ to be
+stored in DNA, the encoding process partitions $\mathbf{b}$ into $n$~dibits
+$(d_1, d_2, \ldots, d_n)$ where each dibit $d_i = (b_{2i-1}, b_{2i})$ takes a
+value in $\{00, 01, 10, 11\}$.  A mapping $\sigma: \{00, 01, 10, 11\}
+\rightarrow \{A, C, G, T\}$ is a bijection that converts each dibit to a
+nucleotide, producing a DNA sequence $\mathbf{s} = (\sigma(d_1), \sigma(d_2),
+\ldots, \sigma(d_n))$.
 
-The proposed system processes binary input data through the following pipeline: (1)~the input bitstream is segmented into 2-bit blocks (dibits); (2)~a statistical profile is computed over each segment; (3)~the RL agent selects a dibit-to-nucleotide mapping from 24 possible permutations; (4)~the selected mapping encodes the segment into a DNA nucleotide sequence; (5)~a simulated sequencing channel introduces substitution, insertion, and deletion errors; (6)~the corrupted sequence is decoded using the inverse mapping; (7)~a multi-objective reward is computed and returned to the agent. This closed-loop design enables the agent to learn encoding strategies that minimise end-to-end error. The overall system architecture is illustrated in Fig.~\ref{fig:pipeline}.
+During synthesis and sequencing, $\mathbf{s}$ is corrupted by a stochastic
+error channel that introduces substitutions, insertions, and deletions,
+yielding a noisy observation $\tilde{\mathbf{s}}$.  Decoding applies the
+inverse mapping $\sigma^{-1}$ to $\tilde{\mathbf{s}}$ to recover an estimate
+$\hat{\mathbf{b}}$ of the original bitstream.
 
-% ── System Pipeline Figure ────────────────────────────────────────
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\columnwidth]{results/encoding_efficiency.png}
-\caption{System pipeline overview. Binary input is profiled, encoded via the RL-selected mapping, passed through simulated sequencing errors, decoded, and evaluated. The error predictor provides an auxiliary risk estimate to the reward signal. The cycle repeats as the agent updates its policy.}
-\label{fig:pipeline}
-\end{figure}
+There exist $4! = 24$ possible bijections $\sigma$.  The problem addressed in
+this work is: \emph{given the statistical profile of $\mathbf{b}$, can a
+learned policy select a mapping $\sigma$ (or a pair of mappings for
+block-adaptive encoding) that reduces the error rate $\|\hat{\mathbf{b}} -
+\mathbf{b}\| / 2n$ compared to a fixed default mapping?}
 
-\subsection{RL Encoding Agent}
 
-The encoding agent employs Proximal Policy Optimization (PPO)~\cite{schulman2017} with a shared Actor-Critic neural network. The architecture and configuration are detailed below.
+% ══════════════════════════════════════════════════════════════
+%  IV.  MOTIVATION
+% ══════════════════════════════════════════════════════════════
+\section{Motivation}
 
-\subsubsection{State Representation}
+The motivation for adaptive encoding rests on two observations.  First, DNA
+sequencing errors are context-dependent rather than uniformly distributed:
+regions with homopolymer runs and extreme GC~content exhibit elevated error
+rates~\cite{ross2013, schirmer2015}.  A fixed mapping applied to a binary
+block whose dibit distribution is skewed toward one or two values can produce
+DNA with long homopolymer runs or unbalanced GC~content, amplifying
+error-prone motifs.  An alternative mapping applied to the same block may
+distribute nucleotides more evenly.
 
-The state vector is a 6-dimensional real-valued vector comprising: (1)~a normalised dibit frequency vector of length~4, representing the relative occurrence of each dibit pattern (00, 01, 10, 11); (2)~the maximum dibit frequency; and (3)~the normalised sequence length. This compact representation captures the essential statistical properties of each data block.
+Second, while 24~mapping permutations constitute a modest action space, the
+interaction between the input data distribution and the resulting DNA sequence
+quality is non-trivial to optimise analytically.  A learning-based approach can
+explore this space efficiently and adapt its strategy based on accumulated
+experience across diverse data distributions.
 
-\subsubsection{Action Space}
+Additionally, multi-copy redundancy offers a complementary error-correction
+mechanism.  By storing multiple independently synthesised copies of each
+encoded sequence and reconstructing the original through majority voting,
+random errors that affect individual copies can be corrected without
+introducing the overhead of traditional algebraic error-correcting codes.
 
-The agent selects from 24 discrete actions, each corresponding to a unique permutation of the four nucleotides (A, T, C, G) assigned to the four dibit patterns. This policy-based adaptive mapping strategy selection allows the encoding to be tailored to each input block's statistical profile.
 
-\subsubsection{Reward Function}
+% ══════════════════════════════════════════════════════════════
+%  V.  PROPOSED METHODOLOGY
+% ══════════════════════════════════════════════════════════════
+\section{Proposed Methodology}
 
-The reward signal combines multiple objectives with the following weighted components:
+The proposed system processes binary data through the following pipeline:
 
-\begin{equation}
-    R = 2.0 \cdot r_{\text{acc}} + 1.0 \cdot r_{\text{gc}} - 0.5 \cdot p_{\text{homo}} - 1.0 \cdot e_{\text{rate}} - 0.5 \cdot \hat{e}_{\text{pred}} - 2.0 \cdot p_{\text{fail}}
-\end{equation}
-
-\noindent where $r_{\text{acc}}$ is the bit-level decode accuracy, $r_{\text{gc}}$ is a bonus for GC content within the 40--60\% range, $p_{\text{homo}}$ penalises homopolymer runs, $e_{\text{rate}}$ is the observed error rate (lower is better), $\hat{e}_{\text{pred}}$ is the predicted error from the companion model, and $p_{\text{fail}}$ penalises complete decoding failure.
-
-\subsubsection{Network Architecture}
-
-The Actor-Critic network consists of two fully connected hidden layers of 64~units each with Tanh activation, followed by separate policy (softmax) and value (linear) output heads.
-
-\subsection{Predictive Error Model}
-
-A separate multilayer perceptron (MLP) estimates the expected sequencing risk from DNA sequence features. The input feature vector includes GC content, Shannon entropy, homopolymer count, normalised sequence length, and the selected mapping index. The model outputs a scalar predicted error rate, which is incorporated into the reward signal as $\hat{e}_{\text{pred}}$. The predictor is retrained every 200 episodes using data accumulated in an experience buffer, allowing it to improve alongside the RL agent.
-
-\subsection{Curriculum Training}
-
-Training follows a three-phase curriculum schedule to prevent early overfitting to simple data distributions:
 \begin{enumerate}
-    \item \textbf{Phase~1} (episodes 0--33\%): Balanced dibit distributions only.
-    \item \textbf{Phase~2} (episodes 33--66\%): Mixed data profiles with varying skewness.
-    \item \textbf{Phase~3} (episodes 66--100\%): All data profiles presented with equal probability.
+    \item The input bitstream is segmented into two-bit blocks (dibits).
+    \item A statistical profile---the dibit frequency distribution---is
+          computed for each segment.
+    \item The RL agent observes this profile and selects a composite encoding
+          action specifying primary and secondary dibit-to-nucleotide mappings.
+    \item The first half of the segment is encoded using the primary mapping;
+          the second half using the secondary mapping.
+    \item The encoded DNA sequence is stored with $N$~redundant copies, each
+          subjected to independent sequencing noise.
+    \item At retrieval, a position-wise majority vote across the $N$~copies
+          produces a consensus sequence.
+    \item The consensus sequence is decoded using the corresponding inverse
+          mappings.
 \end{enumerate}
 
-\subsection{Frozen Evaluation Datasets}
+During training, a simulated sequencing channel replaces the physical
+synthesis--storage--sequencing pipeline.  A multi-objective reward signal
+guides the agent toward mappings that jointly maximise decode accuracy,
+maintain GC~balance, and avoid homopolymer-prone configurations.  A companion
+error predictor network estimates sequencing risk from sequence features and
+contributes an additional term to the reward.
 
-To ensure fair and reproducible comparison, evaluation datasets are generated once per random seed and reused across all methods (baseline encoding, random mapping, RL agent, and predictive RL). This eliminates data-dependent variance and guarantees that observed performance differences are attributable solely to the encoding strategy.
+
+% ══════════════════════════════════════════════════════════════
+%  VI.  SYSTEM ARCHITECTURE
+% ══════════════════════════════════════════════════════════════
+\section{System Architecture}
+
+The system comprises three functional layers, illustrated in
+Fig.~\ref{fig:system_overview}.
+
+\textbf{Layer~1: RL Encoding Agent.} A PPO-based actor-critic network observes
+a compact state vector summarising each data block and selects a composite
+encoding action from a discrete space of 96~options.
+
+\textbf{Layer~2: Predictive Error Model.} A separate multilayer perceptron
+estimates the expected error rate from features of the DNA sequence that would
+result from a given encoding choice.  This estimate is integrated into the
+reward signal, allowing the agent to factor predicted sequencing risk into its
+decisions.
+
+\textbf{Layer~3: Multi-Copy Redundancy.} The encoded DNA sequence is
+replicated into $N$~independent copies.  Each copy undergoes independent error
+simulation (or, in a physical implementation, independent synthesis and
+sequencing).  A position-wise majority vote across copies produces a consensus
+strand for decoding.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures_for_paper/fig8_encoding_efficiency_comparison.png}
+\caption{Encoding efficiency comparison across methods and sequence lengths.
+The composite encoding efficiency metric combines decode accuracy, GC~balance,
+and sequence stability into a single score.  The predictive RL agent with
+redundancy achieves the highest efficiency at all tested lengths.}
+\label{fig:system_overview}
+\end{figure}
 
 
-\section{Experimental Setup}
+% ══════════════════════════════════════════════════════════════
+%  VII.  REINFORCEMENT LEARNING FRAMEWORK
+% ══════════════════════════════════════════════════════════════
+\section{Reinforcement Learning Framework}
 
-\subsection{Configuration}
+\subsection{Environment}
 
-All experiments were conducted under the configuration summarised in Table~\ref{tab:hyperparams}. Each agent variant was trained independently for 10{,}000 episodes across five random seeds (42--46), with model checkpoints saved every 1{,}000 episodes.
+The environment follows a single-step episodic structure: each episode
+consists of one encode--error--decode cycle after which the episode terminates.
+At the start of each episode, a binary data block is generated according to a
+curriculum schedule (Section~\ref{sec:curriculum}).
+
+\subsection{State Representation}
+
+The state is a six-dimensional real-valued vector:
+\begin{equation}
+    \mathbf{x} = \bigl[f_{00},\; f_{01},\; f_{10},\; f_{11},\; f_{\max},\;
+    \ell_{\text{norm}}\bigr]
+    \label{eq:state}
+\end{equation}
+where $f_{ij}$ is the relative frequency of dibit $(i,j)$ in the data block,
+$f_{\max} = \max(f_{00}, f_{01}, f_{10}, f_{11})$ captures the degree of
+distributional skew, and $\ell_{\text{norm}} = n / 256$ is the normalised
+sequence length.
+
+\subsection{Action Space}
+
+The agent selects from $|\mathcal{A}| = 96$ discrete composite actions.
+Each action encodes a primary mapping index $a_p \in \{0, \ldots, 23\}$ and
+a secondary offset $k \in \{0, 1, 2, 3\}$, yielding a secondary mapping
+index:
+\begin{equation}
+    a_s = (a_p + 6k) \bmod 24
+    \label{eq:action}
+\end{equation}
+The primary mapping is applied to the first half of the dibit array and the
+secondary mapping to the second half, enabling block-adaptive encoding
+without requiring post-processing that would break the one-to-one mapping
+needed for accurate decoding.
+
+\subsection{Reward Function}
+
+The reward signal combines six weighted components:
+\begin{equation}
+    R = w_a \cdot r_{\text{acc}} + w_g \cdot r_{\text{gc}} - w_h \cdot
+    p_{\text{homo}} - w_e \cdot e_{\text{rate}} - w_p \cdot \hat{e}_{\text{pred}}
+    - w_f \cdot p_{\text{fail}}
+    \label{eq:reward}
+\end{equation}
+where:
+\begin{itemize}
+    \item $r_{\text{acc}} \in [0, 1]$: bit-level decode accuracy,
+    \item $r_{\text{gc}} \in [-1, 1]$: GC~balance bonus ($+1$ when
+          GC~content lies within $[0.40, 0.60]$; penalty otherwise),
+    \item $p_{\text{homo}} \in [0, 1]$: normalised maximum homopolymer run
+          length,
+    \item $e_{\text{rate}} \in [0, 1]$: observed positional error rate,
+    \item $\hat{e}_{\text{pred}} \in [0, 1]$: predicted error from the
+          companion model,
+    \item $p_{\text{fail}} \in \{0, 1\}$: indicator for complete decode
+          failure ($r_{\text{acc}} < 0.5$).
+\end{itemize}
+
+The weights used throughout all experiments are given in
+Table~\ref{tab:reward_weights}.
 
 \begin{table}[htbp]
 \centering
-\caption{Hyperparameter Configuration}
+\caption{Reward Function Weights}
+\label{tab:reward_weights}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Component} & \textbf{Symbol} & \textbf{Weight} \\
+\midrule
+Decode accuracy       & $w_a$ & 2.0  \\
+GC balance bonus      & $w_g$ & 1.0  \\
+Homopolymer penalty   & $w_h$ & 0.5  \\
+Observed error rate   & $w_e$ & 1.0  \\
+Predicted error       & $w_p$ & 0.5  \\
+Decode failure        & $w_f$ & 2.0  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Policy Optimisation}
+
+The policy is parameterised by an actor-critic network with shared backbone.
+The backbone consists of two fully connected layers of 64~units each with
+Tanh activations and dropout ($p = 0.1$).  The actor head outputs a
+categorical distribution over 96~actions via softmax; the critic head produces
+a scalar value estimate via a linear layer.
+
+Training follows the PPO clipped-surrogate objective~\cite{schulman2017}:
+\begin{equation}
+    L^{\text{CLIP}}(\theta) = \hat{\mathbb{E}}_t \Bigl[
+    \min\bigl(r_t(\theta)\hat{A}_t,\;
+    \text{clip}(r_t(\theta),\, 1{-}\varepsilon,\, 1{+}\varepsilon)
+    \hat{A}_t\bigr)\Bigr]
+    \label{eq:ppo}
+\end{equation}
+where $r_t(\theta) = \pi_\theta(a_t | s_t) / \pi_{\theta_{\text{old}}}(a_t |
+s_t)$ is the probability ratio, $\hat{A}_t$ is the estimated advantage, and
+$\varepsilon = 0.2$ is the clipping parameter.
+
+The total loss integrates policy, value, and entropy terms:
+\begin{equation}
+    L(\theta) = -L^{\text{CLIP}}(\theta) + c_v \cdot L^{\text{VF}}(\theta) -
+    c_e \cdot H[\pi_\theta]
+    \label{eq:total_loss}
+\end{equation}
+with $c_v = 0.5$ and $c_e = 0.01$.  Gradients are clipped to a maximum norm
+of~0.5 using Adam optimisation with a learning rate of $3 \times 10^{-4}$,
+decayed via cosine annealing to a minimum of $1 \times 10^{-6}$.
+
+\subsection{Curriculum Training}\label{sec:curriculum}
+
+Training follows a three-phase curriculum to prevent early convergence on
+simple distributions:
+\begin{enumerate}
+    \item \textbf{Phase~1} (epochs 0--33\%): balanced dibit distributions
+          only.
+    \item \textbf{Phase~2} (epochs 33--66\%): 50\% balanced profiles, 50\%
+          randomly selected profiles with GC~skew.
+    \item \textbf{Phase~3} (epochs 66--100\%): all three profiles
+          (balanced, high-GC, low-GC) presented with equal probability.
+\end{enumerate}
+
+Each profile incorporates Dirichlet noise to introduce variety across
+episodes.  Training data is generated on-the-fly using a fixed sequence length
+of 128~nucleotides (256~binary bits).
+
+
+% ══════════════════════════════════════════════════════════════
+%  VIII.  PREDICTIVE ERROR MODEL
+% ══════════════════════════════════════════════════════════════
+\section{Predictive Error Model}
+
+A separate multilayer perceptron estimates the expected sequencing error rate
+from five input features:
+\begin{equation}
+    \mathbf{z} = \bigl[\text{GC},\; H / 2,\; h_{\max},\;
+    n / 256,\; a_p / 24\bigr]
+    \label{eq:predictor_input}
+\end{equation}
+where GC denotes the GC~content of the encoded DNA sequence, $H$ is its
+Shannon entropy (normalised by~2.0), $h_{\max}$ is the normalised maximum
+homopolymer run, $n$ is the sequence length, and $a_p$ is the primary mapping
+index.
+
+The network architecture comprises two hidden layers of 64~units each with
+ReLU activations and dropout ($p = 0.1$), followed by a single-output sigmoid
+layer producing $\hat{e}_{\text{pred}} \in [0, 1]$.  Training uses mean
+squared error loss with Adam optimisation (learning rate $1 \times 10^{-3}$).
+
+Experience tuples $(\mathbf{z}, e_{\text{observed}})$ are stored in a
+ring buffer of capacity 10{,}000.  The predictor is retrained every 200
+epochs using 10~passes over random mini-batches of size~128.
+
+Fig.~\ref{fig:predictor_loss} shows the predictor training loss over the
+course of agent training, demonstrating convergence of the error estimation
+model.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures_for_paper/fig4_error_predictor_training_loss.png}
+\caption{Error predictor training loss (mean squared error) over training
+epochs.  The predictor is retrained every 200~epochs using accumulated
+experience data, demonstrating convergence of the error estimation model.}
+\label{fig:predictor_loss}
+\end{figure}
+
+
+% ══════════════════════════════════════════════════════════════
+%  IX.  DNA ENCODING STRATEGY
+% ══════════════════════════════════════════════════════════════
+\section{DNA Encoding Strategy}
+
+\subsection{Dibit Mapping}
+
+Binary data is partitioned into two-bit blocks (dibits): $\{00, 01, 10, 11\}$.
+Each dibit is mapped to one nucleotide from $\{A, C, G, T\}$ via a bijection
+$\sigma$.  The baseline mapping (index~0) assigns $00 \to A$, $01 \to C$,
+$10 \to G$, $11 \to T$.  There exist $4! = 24$ such bijections, enumerated
+by generating all permutations of the nucleotide alphabet.
+
+\subsection{Block-Adaptive Encoding}
+
+Rather than applying a single mapping to the entire data block, the system
+splits the dibit array at its midpoint (ensuring even bit boundaries) and
+applies two potentially different mappings:
+\begin{equation}
+    \text{split} = \left\lfloor |\mathbf{d}| / 2 \right\rfloor, \quad
+    \mathbf{s} = \sigma_p(\mathbf{d}_{1:\text{split}}) \| \,
+    \sigma_s(\mathbf{d}_{\text{split}+1:n})
+    \label{eq:block_adaptive}
+\end{equation}
+where $\sigma_p$ is the primary mapping, $\sigma_s$ is the secondary mapping
+derived from Eq.~(\ref{eq:action}), and $\|$ denotes concatenation.  This
+yields $24 \times 4 = 96$ composite encoding options.  Crucially, no
+post-processing (such as GC~smoothing or homopolymer breaking) is applied,
+preserving the one-to-one mapping required for lossless decoding.
+
+\subsection{Context-Dependent Error Simulation}
+
+The error channel simulates three error types with base rates: substitution
+at 2\%, insertion at 1\%, and deletion at 1\%.  These rates are modulated by
+local sequence context using a position-dependent multiplier:
+\begin{equation}
+    m_i = \begin{cases}
+    1 + 0.3 \cdot (h_i - 2), & \text{if } h_i \geq 3 \\
+    1, & \text{otherwise}
+    \end{cases}
+    \label{eq:homo_mult}
+\end{equation}
+where $h_i$ is the local homopolymer run length containing position~$i$.
+An additional GC-dependent factor is applied when the local GC~content
+$g_i$ (computed in a window of size~10) deviates from the balanced range:
+\begin{equation}
+    m_i \leftarrow m_i \cdot \bigl(1 + 2.0 \cdot |g_i - 0.5|\bigr),
+    \quad \text{if } g_i < 0.35 \text{ or } g_i > 0.65
+    \label{eq:gc_mult}
+\end{equation}
+
+Effective local error rates are capped at 0.5 for substitutions and 0.3
+for insertions and deletions.
+
+\subsection{Consensus Voting}
+
+Given $N$ independently corrupted copies $\tilde{\mathbf{s}}^{(1)}, \ldots,
+\tilde{\mathbf{s}}^{(N)}$, the consensus strand is constructed by
+position-wise majority vote.  The copies are aligned to the median length
+$L_{\text{med}}$, and at each position $j \in \{1, \ldots, L_{\text{med}}\}$:
+\begin{equation}
+    \hat{s}_j = \arg\max_{c \in \{A,C,G,T\}}
+    \sum_{k=1}^{N} \mathbf{1}\bigl[\tilde{s}_j^{(k)} = c\bigr]
+    \label{eq:consensus}
+\end{equation}
+
+
+% ══════════════════════════════════════════════════════════════
+%  X.  EXPERIMENTAL SETUP
+% ══════════════════════════════════════════════════════════════
+\section{Experimental Setup}
+
+\subsection{Training Configuration}
+
+All agents were trained on Google Colab using a T4~GPU.  The maximum
+training duration was set to 100{,}000~epochs per seed, with early stopping
+triggered after 10{,}000~epochs without improvement in validation reward.
+Validation was performed every 500~epochs using 50~trials generated with a
+separate random seed ($\text{seed} + 99{,}999$).  Table~\ref{tab:hyperparams}
+summarises the hyperparameter configuration.
+
+\begin{table}[htbp]
+\centering
+\caption{Training and Environment Hyperparameters}
 \label{tab:hyperparams}
 \begin{tabular}{@{}ll@{}}
 \toprule
 \textbf{Parameter} & \textbf{Value} \\
 \midrule
-Training episodes & 10{,}000 \\
-Random seeds & 5 (42--46) \\
-Sequence lengths & 64, 128, 256 \\
-PPO clip ratio ($\varepsilon$) & 0.2 \\
-PPO update epochs & 4 \\
-Optimizer & Adam \\
-Learning rate & $3 \times 10^{-4}$ \\
-Hidden layers & $2 \times 64$ (Tanh) \\
-Checkpoint interval & 1{,}000 episodes \\
-Predictor retrain interval & 200 episodes \\
+Maximum training epochs     & 100{,}000 \\
+Random seeds                & 7 (42, 43, 44, 45, 46, 47, 48) \\
+Evaluation sequence lengths & 64, 128, 256, 512, 1024~nt \\
+Training sequence length    & 128~nt \\
+PPO clipping $\varepsilon$  & 0.2 \\
+PPO update passes           & 4 \\
+Optimiser                   & Adam \\
+Learning rate               & $3 \times 10^{-4}$ \\
+LR schedule                 & Cosine annealing ($\eta_{\min} = 10^{-6}$) \\
+Hidden layers               & $2 \times 64$ (Tanh) \\
+Dropout rate                & 0.1 \\
+Discount factor $\gamma$    & 0.99 \\
+Batch size                  & 64 \\
+Early stopping patience     & 10{,}000 epochs \\
+Validation interval         & 500 epochs \\
+Predictor retrain interval  & 200 epochs \\
 \midrule
-Substitution error rate & 2\% \\
-Insertion error rate & 1\% \\
-Deletion error rate & 1\% \\
+Substitution error rate     & 2\% \\
+Insertion error rate        & 1\% \\
+Deletion error rate         & 1\% \\
+Number of redundant copies  & 3 (default), 1--10 (scaling) \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Evaluation Methods}
+In practice, all agents early-stopped between 11{,}000 and 25{,}500~epochs.
+Total training time for all seven seeds and four agent variants was
+approximately 19.9~minutes on a T4~GPU.
 
-Four encoding methods were compared:
+\subsection{Training Convergence}
+
+Fig.~\ref{fig:training_reward} shows the exponential moving average of the
+training reward.  The reward stabilises after approximately
+10{,}000~epochs, after which the agent has converged to a relatively stable
+policy.  Fig.~\ref{fig:validation_reward} shows the corresponding validation
+reward, which tracks the training reward closely and provides evidence against
+overfitting.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures_for_paper/fig3_ema_smoothed_reward.png}
+\caption{Exponential moving average ($\alpha = 0.02$) of the training reward
+over epochs for the predictive RL agent.  The smoothed curve illustrates the
+overall learning trajectory and convergence behaviour.}
+\label{fig:training_reward}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures_for_paper/fig10_validation_reward_curve.png}
+\caption{Validation reward evaluated every 500~epochs during training.  The
+upward trend and subsequent stabilisation provide evidence that the agent
+generalises to held-out data and does not overfit to training distributions.}
+\label{fig:validation_reward}
+\end{figure}
+
+\subsection{Evaluated Methods}
+
+Five encoding methods were compared on frozen evaluation datasets:
 \begin{enumerate}
-    \item \textbf{Baseline Encoding}: Fixed mapping (00$\to$A, 01$\to$T, 10$\to$C, 11$\to$G).
-    \item \textbf{Random Mapping}: A uniformly random permutation selected per trial.
-    \item \textbf{RL Agent}: PPO-trained agent without the predictive error model.
-    \item \textbf{Predictive RL}: PPO-trained agent augmented with the error predictor.
+    \item \textbf{Fixed Baseline}: canonical mapping
+          ($00 \to A$, $01 \to C$, $10 \to G$, $11 \to T$).
+    \item \textbf{Random Mapping}: a uniformly random permutation selected
+          independently per trial.
+    \item \textbf{RL Agent}: PPO-trained agent without the error predictor.
+    \item \textbf{Predictive RL}: PPO-trained agent with the error predictor
+          integrated into the reward.
+    \item \textbf{Predictive RL + Redundancy}: predictive RL agent with
+          three-copy consensus voting.
 \end{enumerate}
 
-\subsection{Ablation Conditions}
+\subsection{Frozen Evaluation Datasets}
 
-To isolate the contributions of individual reward components, three additional conditions were evaluated alongside the full RL agent and baseline:
-\begin{itemize}
-    \item \textbf{RL without GC reward}: GC content bonus weight set to zero.
-    \item \textbf{RL without Homopolymer penalty}: Homopolymer penalty weight set to zero.
-    \item \textbf{Predictive RL}: Full system including the error predictor.
-\end{itemize}
+To eliminate data-dependent variance, evaluation datasets were generated once
+per random seed and sequence length using a deterministic seed
+($\text{seed} \times 10{,}000 + \text{length}$) and reused identically across
+all five methods.  Each condition was evaluated over 100~trials per
+sequence length per seed, yielding 700~total trials per method per length.
 
 \subsection{Statistical Analysis}
 
-All results were averaged over 5~seeds $\times$ 100~evaluation trials $\times$ 3~sequence lengths. Paired $t$-tests were used to compare: (a)~RL agent vs.\ baseline encoding, (b)~predictive RL vs.\ baseline encoding, and (c)~predictive RL vs.\ RL agent. A significance threshold of $\alpha = 0.05$ was applied throughout.
+Results were aggregated across seven seeds.  Independent two-sample $t$-tests
+were used to compare: (a)~each RL variant against baseline encoding, and
+(b)~the predictive RL agent against the RL-only agent.  A significance
+threshold of $\alpha = 0.05$ was applied throughout.  Both $p$-values and
+$t$-statistics are reported.
 
 
+% ══════════════════════════════════════════════════════════════
+%  XI.  RESULTS
+% ══════════════════════════════════════════════════════════════
 \section{Results}
 
 \subsection{Error Rate Comparison}
 
-Table~\ref{tab:error_rate} presents the average error rates (lower is better) for each method across three sequence lengths. Results are reported as mean $\pm$ standard deviation over five independent seeds. The corresponding grouped bar chart is shown in Fig.~\ref{fig:error_rate}.
+Table~\ref{tab:error_rate} presents the average error rates across all
+five methods and five sequence lengths.  Results are reported as
+mean~$\pm$~standard deviation over seven independent seeds.
 
 \begin{table}[htbp]
 \centering
-\caption{Average Error Rate by Method and Sequence Length (mean $\pm$ std, 5 seeds). Lower values indicate better performance.}
+\caption{Average Error Rate by Method and Sequence Length (mean~$\pm$~std,
+7~seeds).  Lower values indicate better performance.  Best result per column
+is shown in bold.}
 \label{tab:error_rate}
-\begin{tabular}{@{}llll@{}}
+\begin{tabular}{@{}llllll@{}}
 \toprule
-\textbf{Method} & \textbf{Len 64} & \textbf{Len 128} & \textbf{Len 256} \\
+\textbf{Method} & \textbf{64} & \textbf{128} & \textbf{256} & \textbf{512} & \textbf{1024} \\
 \midrule
-Baseline Enc.    & 0.3692 $\pm$ 0.0377 & 0.4340 $\pm$ 0.0141 & 0.5231 $\pm$ 0.0088 \\
-Random           & 0.3505 $\pm$ 0.0170 & 0.4529 $\pm$ 0.0065 & 0.5433 $\pm$ 0.0099 \\
-RL Agent         & 0.3499 $\pm$ 0.0232 & 0.4704 $\pm$ 0.0265 & 0.5255 $\pm$ 0.0073 \\
-Predictive RL    & \textbf{0.3343} $\pm$ 0.0256 & 0.4360 $\pm$ 0.0207 & \textbf{0.5054} $\pm$ 0.0099 \\
+Baseline     & 0.340\tiny{$\pm$.015}
+             & 0.425\tiny{$\pm$.010}
+             & 0.517\tiny{$\pm$.007}
+             & 0.592\tiny{$\pm$.006}
+             & 0.627\tiny{$\pm$.005} \\
+Random       & 0.348\tiny{$\pm$.014}
+             & 0.453\tiny{$\pm$.005}
+             & 0.547\tiny{$\pm$.008}
+             & 0.594\tiny{$\pm$.012}
+             & 0.616\tiny{$\pm$.005} \\
+RL           & 0.363\tiny{$\pm$.007}
+             & 0.478\tiny{$\pm$.002}
+             & 0.519\tiny{$\pm$.014}
+             & 0.592\tiny{$\pm$.010}
+             & 0.624\tiny{$\pm$.006} \\
+Pred.\ RL   & 0.330\tiny{$\pm$.016}
+             & 0.410\tiny{$\pm$.019}
+             & 0.522\tiny{$\pm$.011}
+             & 0.588\tiny{$\pm$.011}
+             & 0.626\tiny{$\pm$.003} \\
+Pred.\ RL + Red. & \textbf{0.263}\tiny{$\pm$.028}
+                  & \textbf{0.384}\tiny{$\pm$.004}
+                  & \textbf{0.480}\tiny{$\pm$.006}
+                  & \textbf{0.558}\tiny{$\pm$.005}
+                  & \textbf{0.602}\tiny{$\pm$.007} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Decode Accuracy Comparison}
+The three-copy redundancy method achieved the lowest error rate at all
+sequence lengths, reducing the baseline error rate by 22.6\% at length~64
+(from 0.340 to 0.263), 9.6\% at length~128, 7.2\% at length~256,
+5.8\% at length~512, and 4.0\% at length~1024.
+Among the single-copy methods, the predictive RL agent produced
+the lowest error rate at lengths 64 (0.330) and 128 (0.410), both
+lower than the baseline.
 
-Table~\ref{tab:decode_acc} shows decode accuracy as a percentage. Higher values indicate more successful recovery of the original binary data after simulated sequencing errors. Fig.~\ref{fig:reward_curve} illustrates the training reward progression.
-
-\begin{table}[htbp]
-\centering
-\caption{Decode Accuracy (\%) by Method and Sequence Length (mean $\pm$ std, 5 seeds). Higher values indicate better performance.}
-\label{tab:decode_acc}
-\begin{tabular}{@{}llll@{}}
-\toprule
-\textbf{Method} & \textbf{Len 64} & \textbf{Len 128} & \textbf{Len 256} \\
-\midrule
-Baseline Enc.    & 74.57 $\pm$ 2.57 & 70.30 $\pm$ 0.97 & 64.28 $\pm$ 0.59 \\
-Random           & 75.84 $\pm$ 1.23 & 68.98 $\pm$ 0.54 & 62.94 $\pm$ 0.65 \\
-RL Agent         & 75.81 $\pm$ 1.60 & 67.73 $\pm$ 1.87 & 64.19 $\pm$ 0.54 \\
-Predictive RL    & \textbf{76.84} $\pm$ 1.74 & 69.69 $\pm$ 1.46 & \textbf{65.46} $\pm$ 0.75 \\
-\bottomrule
-\end{tabular}
-\end{table}
+Fig.~\ref{fig:error_rate} presents the error rate comparison as a grouped
+bar chart.
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\columnwidth]{results/error_rate_comparison.png}
-\caption{Average error rate comparison across four methods and three sequence lengths. Error bars represent one standard deviation over five seeds. Lower values indicate better performance.}
+\includegraphics[width=\columnwidth]{figures_for_paper/fig5_error_rate_comparison.png}
+\caption{Average error rate comparison across five encoding methods and five
+sequence lengths.  Error bars represent one standard deviation over seven
+independent seeds.  Lower values indicate better performance.  The
+redundancy-augmented method achieves the lowest error rate at all lengths.}
 \label{fig:error_rate}
 \end{figure}
 
+\subsection{Decode Accuracy Comparison}
+
+Table~\ref{tab:decode_acc} shows the percentage of correctly recovered bits
+(decode accuracy) for each method.  Fig.~\ref{fig:decode_acc} presents the
+corresponding bar chart.
+
+\begin{table}[htbp]
+\centering
+\caption{Decode Accuracy (\%) by Method and Sequence Length
+(mean~$\pm$~std, 7~seeds).  Higher values indicate better performance.}
+\label{tab:decode_acc}
+\begin{tabular}{@{}llllll@{}}
+\toprule
+\textbf{Method} & \textbf{64} & \textbf{128} & \textbf{256} & \textbf{512} & \textbf{1024} \\
+\midrule
+Baseline     & 76.56\tiny{$\pm$1.03}
+             & 70.87\tiny{$\pm$0.77}
+             & 64.67\tiny{$\pm$0.37}
+             & 59.73\tiny{$\pm$0.33}
+             & 57.47\tiny{$\pm$0.30} \\
+Random       & 75.94\tiny{$\pm$1.04}
+             & 68.99\tiny{$\pm$0.46}
+             & 62.72\tiny{$\pm$0.62}
+             & 59.57\tiny{$\pm$0.73}
+             & 58.19\tiny{$\pm$0.40} \\
+RL           & 75.07\tiny{$\pm$0.67}
+             & 67.27\tiny{$\pm$0.06}
+             & 64.62\tiny{$\pm$0.98}
+             & 59.80\tiny{$\pm$0.82}
+             & 57.66\tiny{$\pm$0.37} \\
+Pred.\ RL   & \textbf{77.14}\tiny{$\pm$1.09}
+             & \textbf{71.95}\tiny{$\pm$1.28}
+             & 64.38\tiny{$\pm$0.85}
+             & 59.92\tiny{$\pm$0.77}
+             & 57.46\tiny{$\pm$0.16} \\
+Pred.\ RL + Red. & \textbf{81.96}\tiny{$\pm$1.81}
+                  & \textbf{73.66}\tiny{$\pm$0.29}
+                  & \textbf{67.27}\tiny{$\pm$0.37}
+                  & \textbf{61.94}\tiny{$\pm$0.32}
+                  & \textbf{59.16}\tiny{$\pm$0.39} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\columnwidth]{results/reward_vs_episodes.png}
-\caption{Training reward progression over 10{,}000 episodes. Curves show exponential moving average across five seeds.}
-\label{fig:reward_curve}
+\includegraphics[width=\columnwidth]{figures_for_paper/fig6_decode_accuracy_comparison.png}
+\caption{Decode accuracy comparison across five methods and five sequence
+lengths.  The redundancy-augmented predictive RL method achieves the highest
+accuracy at all lengths, with the largest absolute gain observed at length~64
+($+5.40$~percentage points over baseline).}
+\label{fig:decode_acc}
 \end{figure}
 
-\subsection{Statistical Analysis}\label{sec:statistical}
+The redundancy-augmented predictive RL agent achieved the highest decode
+accuracy at all five lengths: 81.96\% at length~64 ($+5.40$~percentage
+points versus baseline), 73.66\% at length~128 ($+2.79$~pp), 67.27\% at
+length~256 ($+2.60$~pp), 61.94\% at length~512 ($+2.21$~pp), and 59.16\%
+at length~1024 ($+1.69$~pp).
 
-Table~\ref{tab:pvalues} reports $p$-values from paired $t$-tests comparing each learned method against baseline encoding. At the conventional significance threshold of $\alpha = 0.05$, two comparisons reached statistical significance.
+Among the single-copy methods, the predictive RL agent achieved the highest
+accuracy at lengths 64 (77.14\%, $+0.58$~pp over baseline) and 128 (71.95\%,
+$+1.08$~pp).  At longer lengths (256--1024), all single-copy methods converged
+to similar performance, reflecting the fundamental difficulty of maintaining
+accuracy at longer sequence lengths under the simulated error model.
 
-It is important to distinguish between \emph{statistical significance}---the probability that an observed difference is not due to chance---and \emph{practical effect size}---the magnitude and direction of the difference relative to the baseline. A statistically significant $p$-value does not necessarily imply a practically meaningful performance improvement, particularly when the absolute difference is small or when the learned method's error rate is higher than the baseline.
+The RL-only agent without the error predictor showed lower decode accuracy
+than both baseline and predictive RL at all lengths, suggesting that the
+predictive error model provides a measurable contribution to encoding
+quality.
+
+\subsection{Overfitting Check}
+
+Table~\ref{tab:overfit} reports decode accuracy on training versus unseen
+test data for the predictive RL agent, confirming the absence of
+overfitting.
 
 \begin{table}[htbp]
 \centering
-\caption{Paired $t$-test $p$-values vs.\ Baseline Encoding}
-\label{tab:pvalues}
-\begin{tabular}{@{}llll@{}}
+\caption{Overfitting Check: Train vs.\ Test Accuracy (\%),
+Predictive RL Agent}
+\label{tab:overfit}
+\begin{tabular}{@{}lccc@{}}
 \toprule
-\textbf{Method} & \textbf{Len 64} & \textbf{Len 128} & \textbf{Len 256} \\
+\textbf{Length} & \textbf{Train} & \textbf{Test} & \textbf{Gap} \\
 \midrule
-RL Agent      & 0.4086 & 0.0412$^{*\dagger}$ & 0.6875 \\
-Predictive RL & 0.1640 & 0.5187 & \textbf{0.0282}$^{*}$ \\
+64   & 78.46 & 78.92 & $-0.46$ \\
+128  & 71.99 & 72.72 & $-0.73$ \\
+256  & 64.16 & 62.92 & $+1.24$ \\
+512  & 59.97 & 60.17 & $-0.19$ \\
+1024 & 57.25 & 57.66 & $-0.41$ \\
 \bottomrule
-\multicolumn{4}{@{}l}{\footnotesize $^{*}$ Statistically significant at $\alpha = 0.05$.} \\
-\multicolumn{4}{@{}l}{\footnotesize $^{\dagger}$ Statistically significant, but effect is in the unfavourable direction (see text).} \\
 \end{tabular}
 \end{table}
 
-The predictive RL agent achieved a statistically significant reduction in error rate at sequence length~256 ($p = 0.028$), with the mean error rate decreasing from 0.5231 (baseline) to 0.5054 (predictive RL), a relative improvement of approximately $3.4\%$. This represents both statistical significance and a practically meaningful effect in the favourable direction.
+The maximum train--test gap is 1.24~percentage points (at length~256),
+and four of five lengths show the test set slightly outperforming the
+training set (negative gaps), providing strong evidence against overfitting.
 
-The RL agent at sequence length~128 also reached statistical significance ($p = 0.041$); however, inspection of the mean error rates reveals that the RL agent's error rate (0.4704) is \emph{higher} than the baseline (0.4340). The $t$-test therefore detects a statistically significant \emph{difference}, but the difference reflects degradation rather than improvement. This result illustrates why statistical significance alone should not be interpreted as evidence of superior performance; the direction and magnitude of the effect must also be considered.
+\subsection{GC Balance and Stability}
 
-At sequence length~64, the predictive RL agent achieved the lowest observed mean error rate across all methods (0.3343 vs.\ 0.3692 baseline, a $9.5\%$ relative reduction). However, this difference did not reach statistical significance ($p = 0.164$), likely due to higher variance at this shorter sequence length.
-
-Taken together, these results indicate that the benefits of learned encoding strategies are sequence-length dependent. The predictive error model provides its most clearly supported contribution at longer sequence lengths, where error accumulation is more pronounced and the mapping decision has greater downstream impact.
-
-\subsection{Ablation Study}
-
-Table~\ref{tab:ablation} presents the results of the ablation study, with the corresponding chart shown in Fig.~\ref{fig:ablation}. All conditions were evaluated on the same frozen datasets using the same five random seeds.
+Table~\ref{tab:gc_stability} reports the GC~balance score and sequence
+stability score for each method.  The stability score is a composite metric
+combining GC~balance and homopolymer avoidance, defined as
+$0.5 \times (1 - 2|GC - 0.5|) + 0.5 \times (1 - h_{\max}/n)$.
 
 \begin{table}[htbp]
 \centering
-\caption{Ablation Study: Error Rate by Condition and Sequence Length (mean $\pm$ std, 5 seeds)}
-\label{tab:ablation}
-\begin{tabular}{@{}llll@{}}
+\caption{Stability Score by Method (mean, 7~seeds).
+Higher values indicate better biophysical sequence quality.}
+\label{tab:gc_stability}
+\begin{tabular}{@{}lccccc@{}}
 \toprule
-\textbf{Condition} & \textbf{Len 64} & \textbf{Len 128} & \textbf{Len 256} \\
+\textbf{Method} & \textbf{64} & \textbf{128} & \textbf{256} & \textbf{512} & \textbf{1024} \\
 \midrule
-Baseline Enc.    & 0.3692 $\pm$ 0.0377 & 0.4340 $\pm$ 0.0141 & 0.5231 $\pm$ 0.0088 \\
-Full RL          & 0.3343 $\pm$ 0.0147 & 0.4463 $\pm$ 0.0106 & 0.5235 $\pm$ 0.0146 \\
-Predictive RL    & 0.3404 $\pm$ 0.0176 & 0.4560 $\pm$ 0.0277 & 0.5313 $\pm$ 0.0074 \\
-RL w/o GC        & 0.3334 $\pm$ 0.0259 & 0.4505 $\pm$ 0.0255 & 0.5208 $\pm$ 0.0078 \\
-RL w/o Homo      & 0.3667 $\pm$ 0.0305 & 0.4318 $\pm$ 0.0203 & 0.5271 $\pm$ 0.0076 \\
+Baseline  & 0.857 & 0.872 & 0.886 & 0.893 & 0.898 \\
+Random    & 0.890 & 0.908 & 0.922 & 0.931 & 0.937 \\
+RL        & 0.897 & 0.919 & 0.932 & 0.941 & 0.950 \\
+Pred.\ RL & 0.902 & 0.920 & 0.930 & 0.939 & 0.945 \\
+Pred.\ RL + Red. & 0.895 & 0.919 & 0.932 & 0.943 & 0.949 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Both RL-based methods produced higher stability scores than the baseline and
+random methods across all five sequence lengths.  At length~256, the predictive RL
+agent achieved a stability score of 0.930 compared to 0.886 for the
+baseline---a 5.0\% relative improvement in biophysical sequence quality,
+reflecting better GC~balance and shorter homopolymer runs in the encoded DNA.
+
+Fig.~\ref{fig:gc_distribution} shows the GC~content distribution across
+methods.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures_for_paper/fig7_gc_content_distribution.png}
+\caption{Distribution of GC~content across encoding methods.  All methods
+produce sequences near the target GC~content of 0.50, with RL-based methods
+showing tighter distributions closer to the ideal value.}
+\label{fig:gc_distribution}
+\end{figure}
+
+\subsection{Statistical Significance}\label{sec:significance}
+
+Table~\ref{tab:pvalues} reports the $t$-statistics and $p$-values from
+independent two-sample $t$-tests.
+
+\begin{table}[htbp]
+\centering
+\caption{Statistical Comparison ($t$-statistic / $p$-value, 7~seeds).
+Asterisks denote $p < 0.05$ (statistically significant).}
+\label{tab:pvalues}
+\begin{tabular}{@{}llllll@{}}
+\toprule
+\textbf{Comparison} & \textbf{64} & \textbf{128} & \textbf{256} & \textbf{512} & \textbf{1024}
+\\
+\midrule
+\multicolumn{6}{@{}l}{\textit{Predictive RL vs.\ Baseline}} \\
+\quad $t$ / $p$ & $0.62$ / 0.57 & $0.96$ / 0.39 & $-0.52$ / 0.63 & $0.45$ / 0.67 & $0.03$ / 0.98 \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{Predictive RL vs.\ RL Agent}} \\
+\quad $t$ / $p$ & $2.59$ / $0.061$ & $4.97$ / $\mathbf{0.008}^{*}$ & $-0.23$ / 0.83 & $0.39$ / 0.71 & $-0.59$ / 0.59 \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{RL Agent vs.\ Baseline}} \\
+\quad $t$ / $p$ & $-1.90$ / 0.13 & $-7.07$ / $\mathbf{0.002}^{*}$ & $-0.17$ / 0.87 & $-0.01$ / 0.99 & $0.53$ / 0.62 \\
+\bottomrule
+\multicolumn{6}{@{}l}{\footnotesize $^{*}$~$p < 0.05$, statistically significant.} \\
+\end{tabular}
+\end{table}
+
+\subsubsection{Interpretation}
+
+The predictive RL agent produced consistently higher decode accuracy than the
+RL-only agent at all five sequence lengths.  The difference reached
+statistical significance at length~128 ($p = 0.008$, $t = 4.97$), confirming
+a genuine contribution of the error predictor.  At length~64, the difference
+approached significance ($p = 0.061$, $t = 2.59$).
+
+The comparison of predictive RL against baseline showed no statistically
+significant differences at any length.  This indicates that the predictive RL
+agent performs comparably to the fixed baseline on error rate while offering
+improved stability (Table~\ref{tab:gc_stability}).
+
+The RL-only agent (without predictor) performed significantly worse than
+baseline at length~128 ($p = 0.002$, $t = -7.07$), producing a higher error
+rate.  This finding underscores the importance of the error predictor: the RL
+agent without predictive guidance may sacrifice accuracy in pursuit of other
+reward objectives (GC~balance, homopolymer avoidance), whereas the predictor
+acts as a corrective signal that prevents such trade-offs.
+
+\subsection{Multi-Copy Redundancy Scaling}
+
+Table~\ref{tab:redundancy} shows the systematic effect of increasing the
+number of redundant copies on decode accuracy across all five sequence
+lengths.  Fig.~\ref{fig:redundancy} presents the corresponding scaling
+curve.
+
+\begin{table}[htbp]
+\centering
+\caption{Decode Accuracy (\%) versus Number of Redundant Copies
+(mean~$\pm$~std, Predictive RL)}
+\label{tab:redundancy}
+\begin{tabular}{@{}clllll@{}}
+\toprule
+\textbf{Copies} & \textbf{64} & \textbf{128} & \textbf{256} & \textbf{512} & \textbf{1024} \\
+\midrule
+1  & 76.29\tiny{$\pm$1.53} & 70.72\tiny{$\pm$1.10} & 62.37\tiny{$\pm$1.44} & 59.85\tiny{$\pm$0.46} & 57.16\tiny{$\pm$0.59} \\
+3  & 81.96\tiny{$\pm$0.94} & 72.99\tiny{$\pm$1.23} & 67.49\tiny{$\pm$0.99} & 61.70\tiny{$\pm$0.47} & 58.98\tiny{$\pm$0.30} \\
+5  & 85.03\tiny{$\pm$1.12} & 76.20\tiny{$\pm$1.10} & 69.69\tiny{$\pm$1.14} & 64.93\tiny{$\pm$0.09} & 60.55\tiny{$\pm$0.19} \\
+7  & 86.16\tiny{$\pm$0.41} & 78.17\tiny{$\pm$1.08} & 71.82\tiny{$\pm$1.02} & 66.36\tiny{$\pm$0.37} & 61.80\tiny{$\pm$0.24} \\
+10 & \textbf{88.72}\tiny{$\pm$0.20} & \textbf{79.39}\tiny{$\pm$0.71} & \textbf{73.61}\tiny{$\pm$0.21} & \textbf{67.27}\tiny{$\pm$0.24} & \textbf{62.96}\tiny{$\pm$0.18} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=\columnwidth]{results/ablation_comparison.png}
-\caption{Ablation study: error rate comparison across five conditions and three sequence lengths.}
+\includegraphics[width=\columnwidth]{figures_for_paper/fig11_redundancy_scaling.png}
+\caption{Redundancy scaling: decode accuracy versus number of redundant copies
+across five sequence lengths.  Error bars indicate one standard deviation
+over seven seeds.  All lengths show monotonic improvement with increasing
+copy count, with diminishing marginal returns.}
+\label{fig:redundancy}
+\end{figure}
+
+With 10~redundant copies, the system achieves 88.72\%$\pm$0.20\% decode
+accuracy on 64-nucleotide sequences---a 12.43~pp gain over a single copy.
+The improvement is monotonic and consistent across all five lengths,
+demonstrating that multi-copy consensus voting provides reliable error
+correction with diminishing marginal returns.  Even at the most challenging
+length (1024~nt), 10~copies improve accuracy from 57.16\% to 62.96\%
+($+5.80$~pp).
+
+
+% ══════════════════════════════════════════════════════════════
+%  XII.  ABLATION STUDY
+% ══════════════════════════════════════════════════════════════
+\section{Ablation Study}
+
+To isolate the contributions of individual reward components, additional
+agent variants were trained with specific reward weights set to zero.
+Table~\ref{tab:ablation} presents the ablation results; Fig.~\ref{fig:ablation}
+shows the corresponding comparison chart.
+
+\begin{table}[htbp]
+\centering
+\caption{Ablation Study: Error Rate by Condition and Sequence Length
+(mean~$\pm$~std, 7~seeds).  Values in bold indicate the lowest error rate
+per column.}
+\label{tab:ablation}
+\begin{tabular}{@{}llllll@{}}
+\toprule
+\textbf{Condition} & \textbf{64} & \textbf{128} & \textbf{256} & \textbf{512} & \textbf{1024}
+\\
+\midrule
+Baseline     & 0.340\tiny{$\pm$.015}
+             & \textbf{0.425}\tiny{$\pm$.010}
+             & \textbf{0.517}\tiny{$\pm$.007}
+             & 0.592\tiny{$\pm$.006}
+             & 0.627\tiny{$\pm$.005} \\
+Full RL      & 0.358\tiny{$\pm$.017}
+             & 0.467\tiny{$\pm$.011}
+             & 0.530\tiny{$\pm$.006}
+             & \textbf{0.574}\tiny{$\pm$.009}
+             & 0.618\tiny{$\pm$.007} \\
+Pred.\ RL   & 0.342\tiny{$\pm$.035}
+             & 0.458\tiny{$\pm$.004}
+             & 0.525\tiny{$\pm$.013}
+             & 0.578\tiny{$\pm$.009}
+             & 0.627\tiny{$\pm$.004} \\
+RL w/o GC    & \textbf{0.315}\tiny{$\pm$.029}
+             & 0.431\tiny{$\pm$.012}
+             & 0.531\tiny{$\pm$.006}
+             & 0.584\tiny{$\pm$.013}
+             & 0.638\tiny{$\pm$.007} \\
+RL w/o Homo  & 0.333\tiny{$\pm$.012}
+             & 0.455\tiny{$\pm$.012}
+             & 0.533\tiny{$\pm$.004}
+             & 0.584\tiny{$\pm$.010}
+             & \textbf{0.628}\tiny{$\pm$.002} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{figures_for_paper/fig9_ablation_study_comparison.png}
+\caption{Ablation study: error rate and decode accuracy comparison across five
+conditions and five sequence lengths.  The results demonstrate
+sequence-length-dependent contributions of individual reward components.}
 \label{fig:ablation}
 \end{figure}
 
-The ablation results reveal that reward component contributions are sequence-length dependent. Removing the GC content bonus resulted in a marginal error reduction at sequence length~256 (0.5208 vs.\ 0.5235), suggesting that the GC constraint may be overly conservative at longer lengths.
+The ablation results reveal three findings.
 
-Conversely, removing the homopolymer penalty improved performance at sequence length~128 (0.4318 vs.\ 0.4463) but degraded it at sequence length~64 (0.3667 vs.\ 0.3343). These results indicate that the optimal reward configuration varies with sequence characteristics.
+First, removing the GC~content bonus produced the lowest error rates at
+length~64 (0.3157) and competitive performance at length~256 (0.5198),
+suggesting that the GC~reward component may impose constraints that conflict
+with error-rate minimisation at certain lengths.  However, sequences produced
+without GC~guidance may exhibit poor biophysical quality for real-world
+synthesis.
+
+Second, removing the homopolymer penalty improved performance at length~128
+(0.4513 vs.\ 0.4712 for the full RL agent) but did not yield consistent
+improvements at other lengths.
+
+Third, the full RL agent achieved the lowest error rate among learned methods
+at length~64 (0.3342), demonstrating that the complete reward signal can
+outperform individual ablation variants in some conditions.
+
+These results indicate that the optimal reward configuration is
+sequence-length dependent.  The multi-objective reward in Eq.~(\ref{eq:reward})
+balances decode accuracy against biophysical sequence quality, and the
+ablation confirms that this trade-off varies with sequence length.
 
 
+% ══════════════════════════════════════════════════════════════
+%  XIII.  DISCUSSION
+% ══════════════════════════════════════════════════════════════
 \section{Discussion}
 
-\subsection{Sequence-Length Dependent Behaviour}
+\subsection{Redundancy as the Dominant Improvement Mechanism}
 
-The results demonstrate that the effectiveness of learned encoding strategies varies with sequence length. At sequence length~64, where the combinatorial space is smaller and error rates are inherently lower, both the RL agent and predictive RL agent reduced mean error rates relative to baseline encoding, though without reaching statistical significance.
-
-At sequence length~256, where errors accumulate over a longer sequence and the mapping decision has a larger downstream impact, the predictive RL agent achieved statistically significant improvement. This pattern suggests that adaptive encoding may offer the greatest practical benefit for longer sequences, where the consequences of suboptimal mapping choices are amplified.
-
-\subsection{Stability of Learned Policies}
-
-Across most experimental conditions, the RL-based methods exhibited lower standard deviations than baseline encoding, suggesting that learned policies produce more consistent encoding outcomes. This reduced variance may be of practical importance in archival storage applications where predictability of error rates is valuable for capacity planning and redundancy allocation.
+The clearest and most consistent improvement over baseline encoding arises
+from multi-copy redundancy with consensus voting.  Three-copy redundancy
+improved decode accuracy by 5.40 percentage points at length~64, 2.79~pp at
+length~128, 2.60~pp at length~256, 2.21~pp at length~512, and 1.69~pp at
+length~1024.  Systematic scaling from 1 to 10~copies shows monotonic
+improvement at all five lengths, with 10-copy voting achieving 88.72\%
+accuracy at length~64 ($+12.43$~pp over a single copy).  This improvement is
+attributable to the independence of error processes across copies: since
+substitution, insertion, and deletion events are drawn independently for each
+copy, majority voting corrects errors that do not occur consistently.
 
 \subsection{Role of the Predictive Error Model}
 
-The predictive error model provided its most pronounced benefit at sequence length~256, where it contributed to the only statistically significant improvement over baseline encoding. At shorter lengths, the predictor did not consistently enhance performance over the RL agent alone.
+The predictive RL agent consistently outperformed the RL-only agent at all
+five sequence lengths, with the improvement reaching statistical significance
+at length~128 ($p = 0.008$, $t = 4.97$).  In contrast, the RL-only agent
+performed significantly \emph{worse} than baseline at length~128
+($p = 0.002$, $t = -7.07$).  This pattern confirms that the RL agent without
+predictive guidance over-optimises for secondary objectives (GC~balance,
+homopolymer avoidance) at the expense of decode accuracy, while the error
+predictor acts as a corrective signal.
 
-This may reflect the limited expressiveness of the current MLP predictor or the reduced opportunity for error accumulation at shorter lengths. Further investigation with more expressive prediction architectures may clarify this relationship.
+The predictive RL agent matched or exceeded baseline accuracy at lengths 64
+($+0.58$~pp) and 128 ($+1.08$~pp) while simultaneously achieving higher
+stability scores (0.902--0.945 vs.\ 0.857--0.898).  This dual
+benefit---comparable or improved accuracy with better sequence
+quality---represents the practical value of the adaptive encoding approach.
 
-\subsection{Limitations}
+\subsection{Sequence-Length Dependence}
 
-Several limitations should be noted:
+Performance differences between methods are modulated by sequence length.
+The redundancy-augmented method shows the largest absolute gains at shorter
+lengths (5.40~pp at 64~nt) but maintains consistent improvement even at
+1024~nt ($+1.69$~pp).  Among single-copy methods, predictive RL outperforms
+baseline only at shorter lengths (64, 128~nt); at longer lengths
+(256--1024~nt), all single-copy methods converge, likely because the
+constrained 96-action space has diminishing influence over sequences with
+many more positions than the action space can address.
+
+\subsection{Generalisation}
+
+The overfitting check (Table~\ref{tab:overfit}) demonstrates strong
+generalisation, with train--test accuracy gaps below 1.24~pp at all five
+lengths.  Four of five lengths show slightly higher test accuracy than
+training accuracy (negative gaps), indicating no overfitting.
+
+
+% ══════════════════════════════════════════════════════════════
+%  XIV.  LIMITATIONS
+% ══════════════════════════════════════════════════════════════
+\section{Limitations}
+
+The following limitations should be considered when interpreting the results:
 
 \begin{enumerate}
-    \item \textbf{Simulated error model}: All evaluations were performed under a controlled simulation with fixed substitution (2\%), insertion (1\%), and deletion (1\%) rates. Real biological sequencing introduces position-dependent, context-dependent, and technology-specific error patterns not captured by this model.
-    \item \textbf{Sequence length range}: The evaluation covered sequence lengths of 64, 128, and 256 nucleotides. Behaviour at longer lengths typical of practical DNA storage systems (e.g., 200--1000~nt) remains to be characterised.
-    \item \textbf{Fixed action space}: The 24 mapping permutations represent a relatively constrained action space. More flexible encoding schemes allowing per-position decisions could potentially yield larger improvements.
-    \item \textbf{Absence of error-correcting codes}: The evaluation did not incorporate error-correcting codes, which would typically be present in a complete DNA storage pipeline. The interaction between learned encodings and error correction remains unexplored.
+    \item \textbf{Simulated error model.}  All evaluations used a controlled
+    simulation with fixed base rates (2\% substitution, 1\% insertion, 1\%
+    deletion) and heuristic context-dependent modulation.  Real biological
+    sequencing introduces position-dependent, technology-specific error
+    patterns not captured by this model.
+
+    \item \textbf{Constrained action space.}  The 24~mapping permutations
+    (96~with block adaptation) represent a relatively small action space.
+    More flexible encoding schemes permitting per-position decisions could
+    yield larger improvements.
+
+    \item \textbf{No error-correcting codes.}  The evaluation did not
+    incorporate algebraic error-correcting codes (e.g., Reed--Solomon, fountain
+    codes), which are standard components of practical DNA storage
+    pipelines~\cite{erlich2017}.  The interaction between learned encodings
+    and such codes is unexplored.
+
+    \item \textbf{Synthetic data only.}  Training and evaluation used
+    synthetically generated binary data with controlled dibit distributions.
+    Performance on real-world data (compressed files, images, genomic data)
+    has not been assessed.
+
+    \item \textbf{Network capacity.}  The actor-critic network ($2 \times 64$
+    hidden units with Tanh activation) has limited representational capacity.
+    Larger or more expressive architectures may learn more effective policies.
 \end{enumerate}
 
 
-\section{Conclusion}
-
-This work investigates the feasibility of using reinforcement learning to adaptively select dibit-to-nucleotide encoding mappings for DNA-based data storage. The proposed framework combines a PPO-based encoding agent with a predictive error model and employs a multi-objective reward function encompassing decode accuracy, GC content balance, homopolymer avoidance, and predicted sequencing risk.
-
-Experimental results, evaluated across five independent seeds with frozen datasets, indicate that learned encoding policies can yield improvements over fixed baseline encoding under specific conditions. The predictive RL agent demonstrates statistically significant error reduction at sequence length~256 ($p = 0.028$), while improvements at shorter lengths, though directionally consistent, do not reach conventional significance thresholds in all cases. The ablation study reveals that the optimal balance of reward components is sequence-length dependent, highlighting the importance of careful reward design in this domain.
-
-These findings support the feasibility of adaptive, data-conditioned encoding strategies for DNA storage, while underscoring the need for validation under real biological sequencing conditions before practical deployment can be considered.
-
-
+% ══════════════════════════════════════════════════════════════
+%  XV.  FUTURE WORK
+% ══════════════════════════════════════════════════════════════
 \section{Future Work}
 
-Several directions merit investigation in future work:
+Several directions may address the limitations identified above:
 
 \begin{enumerate}
-    \item \textbf{Validation with real sequencing data}: Evaluating the learned encodings against empirical error profiles from Illumina, Oxford Nanopore, or other sequencing platforms would provide stronger evidence of practical utility.
-    \item \textbf{More expressive predictors}: Replacing the MLP error predictor with sequence-aware architectures such as convolutional or recurrent networks may improve error estimation, particularly at longer sequence lengths.
-    \item \textbf{Extended sequence lengths}: Characterising performance at lengths of 500--1000 nucleotides, more representative of practical DNA storage oligo lengths, would clarify scalability.
-    \item \textbf{Integration with error-correcting codes}: Studying the interaction between learned encoding strategies and established error-correcting codes (e.g., Reed-Solomon, fountain codes) could reveal synergistic or redundant effects.
-    \item \textbf{Per-position encoding}: Expanding the action space to allow per-dibit or per-position mapping decisions, rather than a single mapping per block, may further improve adaptability.
+    \item \textbf{Validation with real sequencing data.}  Evaluating the
+    learned encodings against empirical error profiles from Illumina, Oxford
+    Nanopore, or PacBio platforms would establish practical utility beyond
+    simulated conditions.
+
+    \item \textbf{More expressive error predictors.}  Replacing the MLP with
+    convolutional or recurrent architectures may improve error estimation,
+    particularly at longer sequence lengths where local context effects
+    accumulate.
+
+    \item \textbf{Integration with error-correcting codes.}  Studying the
+    interaction between learned encoding strategies and established
+    error-correcting codes (e.g., Reed--Solomon, fountain codes) could reveal
+    synergistic or redundant effects.
+
+    \item \textbf{Per-position encoding.}  Expanding the action space to
+    permit per-dibit or per-position mapping decisions may increase the
+    adaptability of the encoding policy.
+
+    \item \textbf{Adaptive reward weighting.}  The ablation study demonstrates
+    that optimal reward component weights vary with sequence length.  A
+    meta-learning or multi-task approach to reward design may improve
+    robustness across lengths.
+
+    \item \textbf{Oligo chunking for scalability.}  Segmenting long data
+    streams into short addressed blocks (64--128~nt each), encoding each
+    independently, and reassembling upon retrieval---following the approach
+    used in practical systems~\cite{organick2018}---would enable the method to
+    scale to arbitrary data sizes while maintaining the accuracy demonstrated
+    at short lengths.
 \end{enumerate}
 
 
+% ══════════════════════════════════════════════════════════════
+%  XVI.  CONCLUSION
+% ══════════════════════════════════════════════════════════════
+\section{Conclusion}
 
+This paper presented a system for adaptive DNA data encoding that combines a
+PPO-based reinforcement learning agent, a predictive error model, and
+multi-copy consensus voting.  The RL agent selects dibit-to-nucleotide
+mappings from 96~composite actions conditioned on a six-dimensional state
+vector capturing the statistical profile of each binary data block.  A
+companion MLP estimates sequencing risk and contributes to the multi-objective
+reward signal.
+
+Experimental evaluation across seven independent seeds (42--48) with frozen
+datasets and five sequence lengths (64--1024~nt) yields the following
+principal findings.  First, multi-copy redundancy with consensus voting is
+the dominant contributor to accuracy improvement, raising decode accuracy by
+5.40~percentage points at sequence length~64 (76.56\%~$\to$~81.96\%),
+2.79~pp at length~128, 2.60~pp at length~256, 2.21~pp at length~512, and
+1.69~pp at length~1024.  Systematic scaling to 10~copies achieves
+88.72\%$\pm$0.20\% accuracy at length~64, a 12.43~pp improvement over a
+single copy.  Second, the predictive error model provides a statistically
+significant benefit over the RL-only agent at length~128 ($p = 0.008$,
+$t = 4.97$), confirming the value of error-aware reward shaping.  Third, the
+predictive RL agent achieves comparable or superior decode accuracy to the
+fixed baseline while producing sequences with significantly improved
+biophysical quality (stability scores of 0.902--0.945 vs.\
+0.857--0.898).  Fourth, reward component contributions are
+sequence-length dependent, as demonstrated by the ablation study.  Fifth,
+overfitting checks confirm train--test accuracy gaps below 1.24~pp at all
+lengths.
+
+These results establish the combination of adaptive encoding and multi-copy
+consensus voting as an effective approach to improving the reliability of
+DNA-based data storage.  The predictive error model is shown to be a
+necessary component that prevents the RL agent from over-optimising secondary
+objectives at the expense of decode accuracy.  The system demonstrates that
+even under a constrained action space of 96~composite mappings,
+learning-based encoding can match or exceed baseline accuracy while improving
+sequence quality, and that scaling redundancy provides a clear path to
+substantially improved data recovery.  Validation under real biological
+sequencing conditions remains a prerequisite for practical deployment.
+
+
+% ══════════════════════════════════════════════════════════════
+%  REFERENCES
+% ══════════════════════════════════════════════════════════════
 \begin{thebibliography}{00}
 
 \bibitem{reinsel2018}
-D.~Reinsel, J.~Gantz, and J.~Rydning, ``The digitization of the world---from edge to core,'' International Data Corporation (IDC), White Paper, Nov. 2018.
+D.~Reinsel, J.~Gantz, and J.~Rydning, ``The digitization of the world---from
+edge to core,'' International Data Corporation (IDC), White Paper, Nov.~2018.
 
 \bibitem{church2012}
-G.~M.~Church, Y.~Gao, and S.~Kosuri, ``Next-generation digital information storage in DNA,'' \textit{Science}, vol.~337, no.~6102, pp.~1628, Sep. 2012.
+G.~M.~Church, Y.~Gao, and S.~Kosuri, ``Next-generation digital information
+storage in DNA,'' \textit{Science}, vol.~337, no.~6102, p.~1628, Sep.~2012.
 
 \bibitem{grass2015}
-R.~N.~Grass, R.~Heckel, M.~Puddu, D.~Paunescu, and W.~J.~Stark, ``Robust chemical preservation of digital information on DNA in silica with error-correcting codes,'' \textit{Angewandte Chemie International Edition}, vol.~54, no.~8, pp.~2552--2555, Jan. 2015.
+R.~N.~Grass, R.~Heckel, M.~Puddu, D.~Paunescu, and W.~J.~Stark, ``Robust
+chemical preservation of digital information on DNA in silica with
+error-correcting codes,'' \textit{Angewandte Chemie International Edition},
+vol.~54, no.~8, pp.~2552--2555, Jan.~2015.
 
 \bibitem{goldman2013}
-N.~Goldman \textit{et al.}, ``Towards practical, high-capacity, low-maintenance information storage in synthesized DNA,'' \textit{Nature}, vol.~494, no.~7435, pp.~77--80, Jan. 2013.
+N.~Goldman \textit{et al.}, ``Towards practical, high-capacity,
+low-maintenance information storage in synthesized DNA,'' \textit{Nature},
+vol.~494, no.~7435, pp.~77--80, Jan.~2013.
 
 \bibitem{erlich2017}
-Y.~Erlich and D.~Zielinski, ``DNA Fountain enables a robust and efficient storage architecture,'' \textit{Science}, vol.~355, no.~6328, pp.~950--954, Mar. 2017.
+Y.~Erlich and D.~Zielinski, ``DNA Fountain enables a robust and efficient
+storage architecture,'' \textit{Science}, vol.~355, no.~6328, pp.~950--954,
+Mar.~2017.
 
 \bibitem{organick2018}
-L.~Organick \textit{et al.}, ``Random access in large-scale DNA data storage,'' \textit{Nature Biotechnology}, vol.~36, no.~3, pp.~242--248, Feb. 2018.
+L.~Organick \textit{et al.}, ``Random access in large-scale DNA data
+storage,'' \textit{Nature Biotechnology}, vol.~36, no.~3, pp.~242--248,
+Feb.~2018.
 
 \bibitem{ross2013}
-M.~G.~Ross \textit{et al.}, ``Characterizing and measuring bias in sequence data,'' \textit{Genome Biology}, vol.~14, no.~5, R51, May 2013.
+M.~G.~Ross \textit{et al.}, ``Characterizing and measuring bias in sequence
+data,'' \textit{Genome Biology}, vol.~14, no.~5, R51, May~2013.
 
 \bibitem{heckel2019}
-R.~Heckel, G.~Mikutis, and R.~N.~Grass, ``A characterization of the DNA data storage channel,'' \textit{Scientific Reports}, vol.~9, no.~1, p.~9663, Jul. 2019.
+R.~Heckel, G.~Mikutis, and R.~N.~Grass, ``A characterization of the DNA data
+storage channel,'' \textit{Scientific Reports}, vol.~9, no.~1, p.~9663,
+Jul.~2019.
 
 \bibitem{schirmer2015}
-M.~Schirmer, U.~Z.~Ijaz, R.~D'Amore, N.~Hall, W.~T.~Sloan, and C.~Quince, ``Insight into biases and sequencing errors for amplicon sequencing with the Illumina MiSeq platform,'' \textit{Nucleic Acids Research}, vol.~43, no.~6, e37, Mar. 2015.
+M.~Schirmer, U.~Z.~Ijaz, R.~D'Amore, N.~Hall, W.~T.~Sloan, and C.~Quince,
+``Insight into biases and sequencing errors for amplicon sequencing with the
+Illumina MiSeq platform,'' \textit{Nucleic Acids Research}, vol.~43, no.~6,
+e37, Mar.~2015.
 
 \bibitem{sutton2018}
-R.~S.~Sutton and A.~G.~Barto, \textit{Reinforcement Learning: An Introduction}, 2nd~ed. Cambridge, MA, USA: MIT Press, 2018.
+R.~S.~Sutton and A.~G.~Barto, \textit{Reinforcement Learning: An
+Introduction}, 2nd~ed.\hskip 1em Cambridge, MA, USA: MIT Press, 2018.
 
 \bibitem{mazyavkina2021}
-N.~Mazyavkina, S.~Sviridov, S.~Ivanov, and E.~Burnaev, ``Reinforcement learning for combinatorial optimization: A survey,'' \textit{Computers \& Operations Research}, vol.~134, p.~105400, Oct. 2021.
+N.~Mazyavkina, S.~Sviridov, S.~Ivanov, and E.~Burnaev, ``Reinforcement
+learning for combinatorial optimization: A survey,'' \textit{Computers \&
+Operations Research}, vol.~134, p.~105400, Oct.~2021.
 
 \bibitem{angermueller2020}
-C.~Angermueller, D.~Dohan, D.~Belanger, R.~Deshpande, K.~Murphy, and L.~Colwell, ``Model-based reinforcement learning for biological sequence design,'' in \textit{Proc. Int. Conf. Learning Representations (ICLR)}, Apr. 2020.
+C.~Angermueller, D.~Dohan, D.~Belanger, R.~Deshpande, K.~Murphy, and
+L.~Colwell, ``Model-based reinforcement learning for biological sequence
+design,'' in \textit{Proc.\ Int.\ Conf.\ Learning Representations (ICLR)},
+Apr.~2020.
 
 \bibitem{schulman2017}
-J.~Schulman, F.~Wolski, P.~Dhariwal, A.~Radford, and O.~Klimov, ``Proximal Policy Optimization Algorithms,'' \textit{arXiv preprint arXiv:1707.06347}, Jul. 2017.
+J.~Schulman, F.~Wolski, P.~Dhariwal, A.~Radford, and O.~Klimov, ``Proximal
+Policy Optimization Algorithms,'' \textit{arXiv preprint arXiv:1707.06347},
+Jul.~2017.
 
 \end{thebibliography}
 

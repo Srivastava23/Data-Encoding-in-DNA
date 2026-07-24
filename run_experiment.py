@@ -6,7 +6,8 @@ Usage:
 
 Trains reinforcement learning agents (with and without predictor) across
 multiple seeds, evaluates against baseline and random encoding, runs
-ablation studies, computes statistics with t-tests, and exports CSVs + plots.
+ablation studies, redundancy scaling, computes statistics with t-tests,
+and exports CSVs + plots.
 """
 
 import numpy as np
@@ -22,6 +23,9 @@ from evaluation import (
     compute_statistics,
     export_results_csv,
     export_statistics_csv,
+    run_redundancy_scaling,
+    aggregate_redundancy_scaling,
+    export_redundancy_csv,
 )
 from visualization import generate_all_plots
 
@@ -94,9 +98,12 @@ def main():
     last_smoothed_rewards = []
     last_predictor_losses = []
     last_validation_rewards = []
+    last_predictive_agent = None
+    all_seeds = []
 
     for seed_index in range(config.number_of_seeds):
         seed = config.seed + seed_index
+        all_seeds.append(seed)
         set_global_seeds(seed)
         print(f"\n{'-' * 60}")
         print(f"  Seed {seed_index + 1}/{config.number_of_seeds}  (seed={seed})")
@@ -136,6 +143,7 @@ def main():
         last_smoothed_rewards = predictive_result.get("smoothed_rewards", [])
         last_predictor_losses = predictive_result["predictor_losses"]
         last_validation_rewards = predictive_result.get("validation_rewards", [])
+        last_predictive_agent = agent_predictive
 
         # --- Phase 4: Evaluate standard methods ---
         print("\nEvaluating all methods...")
@@ -161,23 +169,44 @@ def main():
             print(f"    {row['method']:<40} length={row['seq_length']:>3}  "
                   f"error_rate={row['average_error_rate']:.4f}  accuracy={row['decode_accuracy']:.2f}%")
 
-    # --- Phase 6: Statistics ---
+    # --- Phase 6: Redundancy scaling evaluation ---
+    print("\n" + "=" * 60)
+    print("  Phase 6: Redundancy Scaling Evaluation (1-10 copies)")
+    print("=" * 60)
+
+    redundancy_rows = run_redundancy_scaling(
+        config, last_predictive_agent, all_seeds,
+        copy_counts=[1, 2, 3, 4, 5, 7, 10],
+    )
+    redundancy_summary = aggregate_redundancy_scaling(redundancy_rows)
+
+    for entry in redundancy_summary:
+        print(f"  Length {entry['seq_length']:>4}  {entry['number_of_copies']:>2} copies: "
+              f"{entry['decode_accuracy_mean']:.2f}% ± {entry['decode_accuracy_std']:.2f}%")
+
+    # --- Phase 7: Statistics ---
     print("\nComputing statistics...")
     statistics = compute_statistics(all_rows, config)
     ablation_statistics = compute_statistics(all_ablation_rows, config)
 
-    # --- Phase 7: Export ---
+    # --- Phase 8: Export ---
     csv_path = config.results_path(config.csv_filename)
     statistics_path = config.results_path(config.statistics_filename)
     ablation_path = config.results_path("ablation_results.csv")
+    redundancy_path = config.results_path("redundancy_scaling.csv")
+    redundancy_raw_path = config.results_path("redundancy_scaling_raw.csv")
     export_results_csv(all_rows, csv_path)
     export_statistics_csv(statistics, statistics_path)
     export_statistics_csv(ablation_statistics, ablation_path)
-    print(f"\nResults CSV:     {csv_path}")
-    print(f"Statistics CSV:  {statistics_path}")
-    print(f"Ablation CSV:    {ablation_path}")
+    export_redundancy_csv(redundancy_summary, redundancy_path)
+    export_redundancy_csv(redundancy_rows, redundancy_raw_path)
+    print(f"\nResults CSV:          {csv_path}")
+    print(f"Statistics CSV:       {statistics_path}")
+    print(f"Ablation CSV:         {ablation_path}")
+    print(f"Redundancy CSV:       {redundancy_path}")
+    print(f"Redundancy Raw CSV:   {redundancy_raw_path}")
 
-    # --- Phase 8: Plots ---
+    # --- Phase 9: Plots ---
     generate_all_plots(
         epoch_rewards=last_epoch_rewards,
         rolling_rewards=last_rolling_rewards,
@@ -188,11 +217,21 @@ def main():
         config=config,
         ablation_statistics=ablation_statistics,
         validation_rewards=last_validation_rewards,
+        redundancy_summary=redundancy_summary,
     )
 
-    # --- Phase 9: Final summary ---
+    # --- Phase 10: Final summary ---
     print_summary_table(statistics, title="Main Results")
     print_summary_table(ablation_statistics, title="Ablation Results")
+
+    print(f"\n{'=' * 60}")
+    print("  Redundancy Scaling Summary")
+    print(f"{'=' * 60}")
+    for entry in redundancy_summary:
+        marker = " ★" if entry["decode_accuracy_mean"] >= 99.99 else ""
+        print(f"  Length {entry['seq_length']:>4}  {entry['number_of_copies']:>2} copies: "
+              f"{entry['decode_accuracy_mean']:>7.2f}% ± {entry['decode_accuracy_std']:.2f}%{marker}")
+
     print("\nExperiment complete. All outputs saved to:", config.output_directory)
     return 0
 
