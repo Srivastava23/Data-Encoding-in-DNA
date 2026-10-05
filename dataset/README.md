@@ -26,10 +26,12 @@ During training, data difficulty increases progressively:
 
 ## Sequence Lengths
 
-Three DNA sequence lengths are used for evaluation:
+Five DNA sequence lengths are used for evaluation:
 - **64 nucleotides** (128 binary bits)
 - **128 nucleotides** (256 binary bits)
 - **256 nucleotides** (512 binary bits)
+- **512 nucleotides** (1024 binary bits)
+- **1024 nucleotides** (2048 binary bits)
 
 ## Data Splits
 

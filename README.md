@@ -10,28 +10,27 @@ To combat the inherent noise in DNA synthesis and sequencing, the pipeline utili
 
 | Metric | Value |
 |--------|-------|
-| Decode Accuracy (10 copies, 64 nt) | **88.72% ± 0.20%** |
-| Decode Accuracy (3 copies, 64 nt) | **81.96% ± 1.81%** |
-| Decode Accuracy (1 copy, 64 nt) | **77.14% ± 1.09%** |
-| Pred RL vs RL (128 nt) | **p = 0.008** (statistically significant) |
+| Decode Accuracy (10 copies, 64 nt) | **88.24% ± 0.92%** |
+| Decode Accuracy (3 copies, 64 nt) | **81.75% ± 0.93%** |
+| Decode Accuracy (1 copy, 64 nt) | **75.68% ± 1.35%** |
 | Overfitting Gap | < 1.24 pp (no overfitting) |
 | Sequence Lengths Evaluated | 64, 128, 256, 512, 1024 nt |
 | Independent Seeds | 7 (seeds 42–48) |
 | Total Training Time | ~19.9 minutes (Google Colab T4 GPU) |
 
-The Predictive RL agent with 10-copy redundancy achieves **88.72% ± 0.20%** decode accuracy at 64 nt — a **12.43 pp** improvement over a single copy. The error predictor is statistically proven to be necessary: without it, the RL agent performs significantly *worse* than baseline at 128 nt (p = 0.002).
+The Predictive RL agent with 10-copy redundancy achieves **88.24% ± 0.92%** decode accuracy at 64 nt. Multi-copy consensus voting consistently improves accuracy across all sequence lengths, with diminishing returns as length increases — confirming that redundancy is the strongest error-correction mechanism.
 
 ## Results Summary
 
-### Decode Accuracy (%, mean across 7 seeds)
+### Decode Accuracy (%, mean ± std across 7 seeds)
 
 | Method | 64 nt | 128 nt | 256 nt | 512 nt | 1024 nt |
 |--------|-------|--------|--------|--------|---------|
-| Fixed Baseline | 76.56 | 70.87 | 64.67 | 59.73 | 57.47 |
-| Random Mapping | 75.94 | 68.99 | 62.72 | 59.57 | 58.19 |
-| RL (no predictor) | 75.07 | 67.27 | 64.62 | 59.80 | 57.66 |
-| Predictive RL | **77.14** | **71.95** | 64.38 | 59.92 | 57.46 |
-| Pred RL + 3 copies | **81.96** | **73.66** | **67.27** | **61.94** | **59.16** |
+| Fixed Baseline | 74.61±2.18 | 69.79±1.20 | 64.01±0.86 | 60.02±0.54 | 57.39±0.21 |
+| Random Mapping | 76.04±1.32 | 69.25±0.69 | 63.48±1.01 | 59.83±0.77 | 57.71±0.64 |
+| RL Agent | 76.32±1.78 | 69.87±1.08 | 64.16±0.32 | 59.81±0.74 | 57.82±0.63 |
+| Predictive RL | 76.21±1.86 | 69.54±0.99 | 64.57±0.78 | 60.19±0.54 | 57.36±0.31 |
+| Pred RL + 3 copies | **81.25±0.90** | **73.50±0.38** | **67.26±0.41** | **62.71±0.56** | **59.21±0.39** |
 
 *100 evaluation trials per condition per seed on frozen datasets.*
 
@@ -39,21 +38,11 @@ The Predictive RL agent with 10-copy redundancy achieves **88.72% ± 0.20%** dec
 
 | Copies | 64 nt | 128 nt | 256 nt | 512 nt | 1024 nt |
 |--------|-------|--------|--------|--------|---------|
-| 1 | 76.29 | 70.72 | 62.37 | 59.85 | 57.16 |
-| 3 | 81.96 | 72.99 | 67.49 | 61.70 | 58.98 |
-| 5 | 85.03 | 76.20 | 69.69 | 64.93 | 60.55 |
-| 7 | 86.16 | 78.17 | 71.82 | 66.36 | 61.80 |
-| 10 | **88.72** | **79.39** | **73.61** | **67.27** | **62.96** |
-
-### Statistical Significance (independent t-tests, 7 seeds)
-
-| Comparison | 64 nt | 128 nt |
-|-----------|-------|--------|
-| Pred RL vs RL Agent | p = 0.061 | **p = 0.008** ✓ |
-| RL Agent vs Baseline | p = 0.13 | **p = 0.002** ✓ |
-| Pred RL vs Baseline | p = 0.57 | p = 0.39 |
-
-**Key insight:** The RL agent without the error predictor is significantly *worse* than the fixed baseline at 128 nt (p = 0.002). The error predictor corrects this, making the predictive RL agent significantly better than the RL-only agent (p = 0.008). This proves the predictor is a necessary component.
+| 1 | 75.68±1.35 | 70.21±1.30 | 64.30±1.10 | 60.31±0.78 | 57.29±0.52 |
+| 3 | 81.75±0.93 | 72.81±1.04 | 67.08±0.44 | 62.16±0.76 | 58.92±0.58 |
+| 5 | 84.07±0.67 | 76.66±0.65 | 69.84±0.54 | 64.71±0.31 | 60.57±0.29 |
+| 7 | 86.41±0.69 | 78.78±0.86 | 71.61±0.96 | 65.69±0.59 | 61.84±0.46 |
+| 10 | **88.24±0.92** | **80.34±1.01** | **72.27±0.73** | **67.22±0.39** | **62.99±0.31** |
 
 ### Overfitting Check (Predictive RL)
 
@@ -102,14 +91,13 @@ Max gap: 1.24 pp. Four of five lengths have negative gaps (test > train).
 - **Multi-Copy Redundancy:** 1–10 copies with position-wise majority voting for error correction.
 - **Text & Image Encoding:** The web demo encodes text, PNG, JPEG, GIF, BMP, and WebP into DNA.
 - **Google Colab Training:** GPU notebook (`DNA_Training_Colab.ipynb`) trains 28 models in ~20 minutes.
-- **Local Evaluation Pipeline:** `run_full_pipeline.py` runs all evaluation, ablation, and chart generation.
+- **Local Evaluation Pipeline:** `rerun_evaluation.py` runs all evaluation, ablation, and chart generation.
 - **Interactive Web Dashboard:** Visualises encoding, error simulation, and performance at [adaptive-dna-encoding.netlify.app](https://adaptive-dna-encoding.netlify.app/).
 
 ## Repository Structure
 
 ```
 ├── DNA_Training_Colab.ipynb     # Colab notebook for GPU training
-├── run_full_pipeline.py         # Local evaluation pipeline (8 phases)
 ├── config.py                    # Central hyperparameters
 ├── rl_agent.py                  # PPO actor-critic network
 ├── rl_environment.py            # RL environment (state, reward)
@@ -122,18 +110,18 @@ Max gap: 1.24 pp. Four of five lengths have negative gaps (test > train).
 ├── evaluation.py                # Evaluation framework + statistics
 ├── visualization.py             # Publication-quality figure generation
 ├── training_pipeline.py         # Training loop with early stopping
+├── rerun_evaluation.py          # Full 7-seed evaluation pipeline
+├── rebuild_figures.py           # Figure regeneration from raw CSVs
 ├── paper/main.tex               # IEEE conference paper
-├── figures_for_paper/           # 11 publication figures
 ├── website/                     # Interactive dashboard
 │   ├── index.html
 │   ├── style.css
 │   ├── script.js
 │   └── demo_data.json           # Evaluation data for website
-└── results/                     # CSVs, plots, model checkpoints
-    ├── results.csv
-    ├── statistics_summary.csv
-    ├── ablation_results.csv
-    └── redundancy_scaling.csv
+└── results/                     # Model checkpoints + trained models
+    ├── checkpoints/             # Per-seed .pt model files
+    ├── colab_trained_models.zip # Trained models from Colab
+    └── colab_export.json        # Training metadata + curves
 ```
 
 ## How to Run
@@ -148,9 +136,9 @@ Max gap: 1.24 pp. Four of five lengths have negative gaps (test > train).
 1. Extract `colab_trained_models.zip` into the `results/` folder.
 2. Run the evaluation pipeline:
    ```bash
-   python run_full_pipeline.py --input results/colab_export.json
+   python rerun_evaluation.py
    ```
-   This runs 8 phases: model loading → evaluation → ablation → statistics → overfitting check → redundancy scaling → plot generation → website data export.
+   This generates all raw CSVs, statistical tables, and self-check reports in `results/rerun/`.
 
 ### 3. View the Dashboard
 ```bash
@@ -160,7 +148,7 @@ Open [http://localhost:8000/website/index.html](http://localhost:8000/website/in
 
 ## Paper
 
-The accompanying IEEE conference paper is in `paper/main.tex`. It covers the full methodology, 7-seed experimental results across 5 sequence lengths, ablation study, statistical significance analysis, and redundancy scaling evaluation.
+The accompanying IEEE conference paper is in `paper/main.tex`. It covers the full methodology, 7-seed experimental results across 5 sequence lengths (64–1024 nt), ablation study, and redundancy scaling evaluation.
 
 ## License
 
