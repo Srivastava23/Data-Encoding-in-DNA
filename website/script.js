@@ -1326,6 +1326,8 @@ function renderRedundancyAnalysisChart() {
                     "64": "#6366f1",
                     "128": "#06b6d4",
                     "256": "#f59e0b",
+                      "512": "#ec4899",
+                      "1024": "#10b981",
                 }[lengthKey] || "#95a5a6",
                 label: `Length ${lengthKey}`,
             };

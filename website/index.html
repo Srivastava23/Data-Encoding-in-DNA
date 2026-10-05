@@ -48,7 +48,7 @@
         </p>
         <div class="hero-stats">
             <div class="stat-pill">
-                <span class="stat-value">88.72%</span>
+                <span class="stat-value">88.24%</span>
                 <span class="stat-label">Accuracy (10 Copies, 64 nt)</span>
             </div>
             <div class="stat-pill">
@@ -194,9 +194,9 @@
             <div class="glass-card">
                 <h3>📊 Evaluation Setup</h3>
                 <ul class="setup-list">
-                    <li><strong>Sequence Lengths:</strong> 64, 128, 256 nucleotides</li>
+                    <li><strong>Sequence Lengths:</strong> 64, 128, 256, 512, 1024 nucleotides</li>
                     <li><strong>Trials per Length:</strong> 100 frozen evaluation trials</li>
-                    <li><strong>Seeds:</strong> 3–5 independent runs</li>
+                    <li><strong>Seeds:</strong> 7 independent runs</li>
                     <li><strong>Validation:</strong> Every 500 epochs on held-out data</li>
                     <li><strong>Error Rates:</strong> 2% substitution, 1% insertion, 1% deletion</li>
                 </ul>
@@ -450,8 +450,8 @@
             <canvas id="redundancy-analysis-chart" width="900" height="350"></canvas>
         </div>
         <div class="finding-highlight">
-            <div class="big-stat">100%</div>
-            <div class="big-label">Decode accuracy achieved with redundant copies and majority voting — zero data loss.</div>
+            <div class="big-stat">88.24%</div>
+            <div class="big-label">Maximum decode accuracy achieved (10 copies at 64 nt) with redundant copies and majority voting.</div>
         </div>
     </div>
 </section>
@@ -477,7 +477,7 @@
     <div class="container">
         <h2 class="section-title">Experimental Results</h2>
         <p class="section-intro">
-            Performance of all methods across three DNA sequence lengths, averaged over multiple independent seeds.
+            Performance of all methods across five DNA sequence lengths, averaged over 7 independent seeds.
             Includes multi-copy redundancy results showing accuracy improvement.
         </p>
 

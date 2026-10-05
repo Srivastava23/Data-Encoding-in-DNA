@@ -1,0 +1,176 @@
+Method,GC_Content_Mean_Of_100_Trials
+Fixed Baseline,0.50125
+Fixed Baseline,0.49484375
+Fixed Baseline,0.5217578125
+Fixed Baseline,0.50115234375
+Fixed Baseline,0.502705078125
+Fixed Baseline,0.48875
+Fixed Baseline,0.498359375
+Fixed Baseline,0.5028125
+Fixed Baseline,0.50275390625
+Fixed Baseline,0.503623046875
+Fixed Baseline,0.495625
+Fixed Baseline,0.500234375
+Fixed Baseline,0.508515625
+Fixed Baseline,0.49748046875
+Fixed Baseline,0.504931640625
+Fixed Baseline,0.5221875
+Fixed Baseline,0.495703125
+Fixed Baseline,0.4977734375
+Fixed Baseline,0.4957421875
+Fixed Baseline,0.505009765625
+Fixed Baseline,0.49421875
+Fixed Baseline,0.508203125
+Fixed Baseline,0.509296875
+Fixed Baseline,0.50720703125
+Fixed Baseline,0.495302734375
+Fixed Baseline,0.510625
+Fixed Baseline,0.505859375
+Fixed Baseline,0.5004296875
+Fixed Baseline,0.50021484375
+Fixed Baseline,0.507744140625
+Fixed Baseline,0.49609375
+Fixed Baseline,0.5090625
+Fixed Baseline,0.50703125
+Fixed Baseline,0.49845703125
+Fixed Baseline,0.5076953125
+Random Mapping,0.50375
+Random Mapping,0.5096875
+Random Mapping,0.507109375
+Random Mapping,0.5029296875
+Random Mapping,0.50525390625
+Random Mapping,0.50625
+Random Mapping,0.5021875
+Random Mapping,0.5236328125
+Random Mapping,0.49931640625
+Random Mapping,0.5126171875
+Random Mapping,0.48375
+Random Mapping,0.47984375
+Random Mapping,0.4955078125
+Random Mapping,0.518203125
+Random Mapping,0.511328125
+Random Mapping,0.50234375
+Random Mapping,0.499609375
+Random Mapping,0.502265625
+Random Mapping,0.50556640625
+Random Mapping,0.495849609375
+Random Mapping,0.49171875
+Random Mapping,0.50359375
+Random Mapping,0.5025390625
+Random Mapping,0.5009375
+Random Mapping,0.479287109375
+Random Mapping,0.5140625
+Random Mapping,0.501875
+Random Mapping,0.4974609375
+Random Mapping,0.50029296875
+Random Mapping,0.48041015625
+Random Mapping,0.5
+Random Mapping,0.488515625
+Random Mapping,0.4891015625
+Random Mapping,0.5030859375
+Random Mapping,0.508759765625
+RL Agent,0.48046875
+RL Agent,0.50671875
+RL Agent,0.508359375
+RL Agent,0.50630859375
+RL Agent,0.5061328125
+RL Agent,0.47828125
+RL Agent,0.509453125
+RL Agent,0.4883984375
+RL Agent,0.5066015625
+RL Agent,0.495068359375
+RL Agent,0.50640625
+RL Agent,0.485
+RL Agent,0.5113671875
+RL Agent,0.5098828125
+RL Agent,0.513154296875
+RL Agent,0.4946875
+RL Agent,0.495703125
+RL Agent,0.5015234375
+RL Agent,0.4975390625
+RL Agent,0.515771484375
+RL Agent,0.47421875
+RL Agent,0.506796875
+RL Agent,0.50578125
+RL Agent,0.51181640625
+RL Agent,0.5097265625
+RL Agent,0.49515625
+RL Agent,0.4875
+RL Agent,0.50265625
+RL Agent,0.50236328125
+RL Agent,0.504072265625
+RL Agent,0.504375
+RL Agent,0.50484375
+RL Agent,0.4962109375
+RL Agent,0.49919921875
+RL Agent,0.5082421875
+Predictive RL,0.50109375
+Predictive RL,0.503515625
+Predictive RL,0.498828125
+Predictive RL,0.50041015625
+Predictive RL,0.50193359375
+Predictive RL,0.50390625
+Predictive RL,0.50921875
+Predictive RL,0.49171875
+Predictive RL,0.505390625
+Predictive RL,0.50341796875
+Predictive RL,0.50109375
+Predictive RL,0.496953125
+Predictive RL,0.4990234375
+Predictive RL,0.4831640625
+Predictive RL,0.49375
+Predictive RL,0.49609375
+Predictive RL,0.506484375
+Predictive RL,0.4956640625
+Predictive RL,0.4976953125
+Predictive RL,0.504599609375
+Predictive RL,0.4903125
+Predictive RL,0.501953125
+Predictive RL,0.4855859375
+Predictive RL,0.5088671875
+Predictive RL,0.504404296875
+Predictive RL,0.50015625
+Predictive RL,0.504765625
+Predictive RL,0.48609375
+Predictive RL,0.504921875
+Predictive RL,0.50658203125
+Predictive RL,0.5128125
+Predictive RL,0.489609375
+Predictive RL,0.49625
+Predictive RL,0.505625
+Predictive RL,0.49802734375
+Pred. RL + 3-copy,0.505
+Pred. RL + 3-copy,0.49484375
+Pred. RL + 3-copy,0.510703125
+Pred. RL + 3-copy,0.50751953125
+Pred. RL + 3-copy,0.512783203125
+Pred. RL + 3-copy,0.50953125
+Pred. RL + 3-copy,0.505234375
+Pred. RL + 3-copy,0.49375
+Pred. RL + 3-copy,0.47748046875
+Pred. RL + 3-copy,0.506572265625
+Pred. RL + 3-copy,0.498125
+Pred. RL + 3-copy,0.5009375
+Pred. RL + 3-copy,0.496171875
+Pred. RL + 3-copy,0.4990234375
+Pred. RL + 3-copy,0.502705078125
+Pred. RL + 3-copy,0.51109375
+Pred. RL + 3-copy,0.492890625
+Pred. RL + 3-copy,0.4870703125
+Pred. RL + 3-copy,0.51037109375
+Pred. RL + 3-copy,0.499912109375
+Pred. RL + 3-copy,0.5028125
+Pred. RL + 3-copy,0.490703125
+Pred. RL + 3-copy,0.4948828125
+Pred. RL + 3-copy,0.4996484375
+Pred. RL + 3-copy,0.506572265625
+Pred. RL + 3-copy,0.48734375
+Pred. RL + 3-copy,0.50765625
+Pred. RL + 3-copy,0.498984375
+Pred. RL + 3-copy,0.493671875
+Pred. RL + 3-copy,0.49095703125
+Pred. RL + 3-copy,0.51953125
+Pred. RL + 3-copy,0.503671875
+Pred. RL + 3-copy,0.5123046875
+Pred. RL + 3-copy,0.4975
+Pred. RL + 3-copy,0.49583984375
