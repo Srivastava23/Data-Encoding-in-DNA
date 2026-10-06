@@ -92,7 +92,7 @@ print("=" * 60)
 # **Estimated time: 1–1.5 hours on T4 GPU.**
 
 # %%
-from training_pipeline import train
+from training_pipeline_v3 import train
 import json
 import time
 

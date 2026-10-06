@@ -228,3 +228,133 @@ def decode_with_action(dna_sequence: str, action: int,
     second_bits = decode_dna_to_binary(dna_sequence[dna_half:], secondary_mapping)
 
     return np.concatenate([first_bits, second_bits])
+
+# ============================================================================
+# V3: Multi-Block Encoding (Sequential)
+# ============================================================================
+
+def get_block_splits(binary_bits_length: int, config) -> List[Tuple[int, int]]:
+    """
+    Returns a list of (start_bit_index, end_bit_index) for partitioning the data.
+    Ensures each block's bit length is even (for dibit encoding).
+    """
+    if config.block_policy == "fixed_count":
+        N = config.number_of_encoding_blocks
+    elif config.block_policy == "fixed_size":
+        dna_length = binary_bits_length // 2
+        # fixed size in nt; each block has fixed_block_size_nt * 2 bits
+        N = max(1, dna_length // config.fixed_block_size_nt)
+    else:
+        raise ValueError(f"Unknown block_policy: {config.block_policy}")
+
+    # For N=1, just return the whole sequence
+    if N <= 1:
+        return [(0, binary_bits_length)]
+        
+    # For N=2, we need to exactly match the legacy split for equivalence testing
+    if N == 2 and config.block_policy == "fixed_count":
+        half = (binary_bits_length // 4) * 2
+        return [(0, half), (half, binary_bits_length)]
+
+    # General case: distribute evenly, ensuring even bit counts
+    splits = []
+    base_bits_per_block = (binary_bits_length // N) // 2 * 2
+    remainder_dibits = (binary_bits_length - base_bits_per_block * N) // 2
+
+    start = 0
+    for i in range(N):
+        length = base_bits_per_block + (2 if i < remainder_dibits else 0)
+        splits.append((start, start + length))
+        start += length
+        
+    return splits
+
+
+def get_overhead_bits(N: int, config) -> int:
+    """
+    Calculate overhead in bits for storing the header.
+    The mapping index takes 5 bits (0-23 needs 5 bits).
+    """
+    if config.use_header_free_encoding:
+        return 0
+    # 5 bits per block, repeated according to repetition code length
+    return N * 5 * config.header_repetition_code_length
+
+
+def get_net_information_density(binary_bits_length: int, N: int, config) -> float:
+    """
+    Returns net information density in bits per nucleotide.
+    Max is 2.0. Overhead reduces this.
+    """
+    dna_length = binary_bits_length // 2
+    overhead_bits = get_overhead_bits(N, config)
+    net_data_bits = binary_bits_length - overhead_bits
+    return max(0.0, net_data_bits / dna_length)
+
+
+def encode_block_sequence(binary_bits: np.ndarray, 
+                          block_mappings: List[int],
+                          config) -> str:
+    """
+    Encode a sequence into multiple blocks given a list of mapping indices.
+    """
+    splits = get_block_splits(len(binary_bits), config)
+    assert len(splits) == len(block_mappings)
+    
+    dna_blocks = []
+    from decoder import decode_dna_to_binary
+    
+    for i, (start, end) in enumerate(splits):
+        block_bits = binary_bits[start:end]
+        
+        mapping_idx = block_mappings[i]
+        
+        # Header-free logic: mapping for block k is a deterministic function of decoded block k-1
+        if config.use_header_free_encoding and i > 0:
+            # We use the previous block's binary bits to compute an offset
+            prev_bits = binary_bits[splits[i-1][0] : splits[i-1][1]]
+            # simple hash: sum of bits modulo 24
+            offset = int(np.sum(prev_bits)) % NUMBER_OF_MAPPINGS
+            # Add to base mapping
+            mapping_idx = (mapping_idx + offset) % NUMBER_OF_MAPPINGS
+            
+        mapping = ALL_MAPPINGS[mapping_idx]
+        dna_block = encode_binary_to_dna(block_bits, mapping)
+        dna_blocks.append(dna_block)
+        
+    return "".join(dna_blocks)
+
+
+def decode_block_sequence(dna_sequence: str, 
+                          block_mappings: List[int], 
+                          config) -> np.ndarray:
+    """
+    Decode a block-encoded DNA sequence.
+    """
+    binary_bits_length = len(dna_sequence) * 2
+    splits = get_block_splits(binary_bits_length, config)
+    assert len(splits) == len(block_mappings)
+    
+    from decoder import decode_dna_to_binary
+    
+    decoded_bits = []
+    
+    for i, (start, end) in enumerate(splits):
+        # dna coordinates
+        dna_start = start // 2
+        dna_end = end // 2
+        dna_block = dna_sequence[dna_start:dna_end]
+        
+        mapping_idx = block_mappings[i]
+        
+        if config.use_header_free_encoding and i > 0:
+            prev_bits = decoded_bits[-1]
+            offset = int(np.sum(prev_bits)) % NUMBER_OF_MAPPINGS
+            mapping_idx = (mapping_idx + offset) % NUMBER_OF_MAPPINGS
+            
+        mapping = ALL_MAPPINGS[mapping_idx]
+        block_bits = decode_dna_to_binary(dna_block, mapping)
+        decoded_bits.append(block_bits)
+        
+    return np.concatenate(decoded_bits)
+

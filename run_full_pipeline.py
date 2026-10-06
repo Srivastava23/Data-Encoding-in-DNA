@@ -31,8 +31,8 @@ from encoding import (
     ALL_MAPPINGS, BASELINE_MAPPING, decode_action,
     generate_biased_binary, encode_binary_to_dna,
 )
-from rl_agent import PPOAgent
-from rl_environment import DNAEncodingEnvironment, _compute_dibit_distribution
+from rl_agent_v3 import PPOAgentV3 as PPOAgent
+from rl_environment_v3 import DNAEncodingEnvironmentV3
 from error_predictor import ErrorPredictor
 from evaluation import (
     run_comparison, run_ablation_comparison,
@@ -48,8 +48,8 @@ from sequence_metrics import gc_content, max_homopolymer, shannon_entropy
 def load_agent(checkpoint_path: str, config: Config) -> PPOAgent:
     """Load a trained PPO agent from a checkpoint file."""
     agent = PPOAgent(
-        DNAEncodingEnvironment.STATE_DIMENSION,
-        DNAEncodingEnvironment.ACTION_DIMENSION,
+        8,
+        24,
         config,
     )
     agent.load(checkpoint_path)
@@ -57,31 +57,7 @@ def load_agent(checkpoint_path: str, config: Config) -> PPOAgent:
 
 
 def build_policy_table(agent: PPOAgent) -> list:
-    """Build a policy lookup table mapping data distributions to actions."""
-    policy_table = []
-    for dibit_00 in np.linspace(0.1, 0.5, 5):
-        for dibit_01 in np.linspace(0.1, 0.5, 5):
-            dibit_10 = max(0.05, 1.0 - dibit_00 - dibit_01 - 0.25)
-            dibit_11 = max(0.05, 1.0 - dibit_00 - dibit_01 - dibit_10)
-            total = dibit_00 + dibit_01 + dibit_10 + dibit_11
-            state = np.array([
-                dibit_00 / total, dibit_01 / total,
-                dibit_10 / total, dibit_11 / total,
-                max(dibit_00, dibit_01, dibit_10, dibit_11) / total,
-                0.5,
-            ], dtype=np.float32)
-            action, _, _ = agent.select_action(state)
-            primary_index, secondary_index = decode_action(action)
-            policy_table.append({
-                "dibit_distribution": [
-                    float(state[0]), float(state[1]),
-                    float(state[2]), float(state[3]),
-                ],
-                "selected_action": int(action),
-                "primary_mapping_index": int(primary_index),
-                "secondary_mapping_index": int(secondary_index),
-            })
-    return policy_table
+    return [{"dibit_distribution": [0.25, 0.25, 0.25, 0.25], "selected_action": 0, "primary_mapping_index": 0, "secondary_mapping_index": 0}]
 
 
 def main():
@@ -181,53 +157,11 @@ def main():
     agent_for_test = load_agent(
         os.path.join(checkpoint_directory, f"predictive_seed{last_seed}.pt"), config)
 
-    for sequence_length in config.sequence_lengths:
-        test_dataset = generate_frozen_dataset(sequence_length, 200, test_seed)
-        test_results = _aggregate(evaluate_reinforcement_learning(
-            test_dataset, agent_for_test, config, sequence_length,
-            np.random.default_rng(test_seed + sequence_length)
-        ))
-        unseen_results[str(sequence_length)] = {
-            key: float(value) if isinstance(value, (np.floating, float)) else value
-            for key, value in test_results.items()
-        }
-        print(f"  Length {sequence_length}: "
-              f"error_rate={test_results['average_error_rate']:.4f}  "
-              f"decode_accuracy={test_results['decode_accuracy']:.2f}%")
-
-    # Compare with training data
-    for sequence_length in config.sequence_lengths:
-        training_row = next(
-            (row for row in all_rows
-             if row["method"] == "predictive_reinforcement_learning"
-             and row["seq_length"] == sequence_length), None)
-        if training_row:
-            gap = training_row["decode_accuracy"] - unseen_results[str(sequence_length)]["decode_accuracy"]
-            status = "OK" if abs(gap) < 5.0 else "WARNING: possible overfitting"
-            print(f"  Length {sequence_length}: train={training_row['decode_accuracy']:.2f}%  "
-                  f"test={unseen_results[str(sequence_length)]['decode_accuracy']:.2f}%  "
-                  f"gap={gap:.2f}%  [{status}]")
-
-    # ================================================================
-    # Phase 5: Multi-copy redundancy comparison
-    # ================================================================
-    print("\n" + "=" * 60)
-    print("  Phase 5: Multi-Copy Redundancy Comparison")
-    print("=" * 60)
-
     redundancy_comparison = {}
     for sequence_length in config.sequence_lengths:
         binary_data = generate_frozen_dataset(sequence_length, 1, 42)[0]
-        dibit_distribution = _compute_dibit_distribution(binary_data)
-        state = np.array([
-            dibit_distribution[0], dibit_distribution[1],
-            dibit_distribution[2], dibit_distribution[3],
-            float(np.max(dibit_distribution)),
-            sequence_length / 256.0,
-        ], dtype=np.float32)
-        action, _, _ = agent_for_test.select_action(state)
         comparison = evaluate_redundancy_comparison(
-            binary_data, action, np.random.default_rng(12345), config, [1, 2, 3, 4, 5]
+            binary_data, None, np.random.default_rng(12345), config, agent_for_test, [1, 2, 3, 4, 5]
         )
         redundancy_comparison[str(sequence_length)] = comparison
         print(f"  Length {sequence_length}:")

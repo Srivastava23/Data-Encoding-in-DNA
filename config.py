@@ -37,8 +37,10 @@ class Config:
     ppo_batch_size: int = 64
     ppo_hidden_dimension: int = 64
     ppo_entropy_coefficient: float = 0.01
+    ppo_entropy_coefficient_min: float = 0.005           # anneal to this
     ppo_value_coefficient: float = 0.5
     ppo_maximum_gradient_norm: float = 0.5
+    ppo_gae_lambda: float = 0.95
 
     # error predictor hyperparameters
     predictor_learning_rate: float = 1e-3
@@ -50,11 +52,12 @@ class Config:
     use_error_predictor: bool = True                     # toggle Layer 2
 
     # reward weights
+    reward_local_weight: float = 0.5                     # local block predicted error
+    reward_terminal_weight: float = 1.0                  # terminal full-sequence accuracy
     reward_accuracy_weight: float = 2.0
     reward_gc_bonus_weight: float = 1.0
     reward_homopolymer_penalty_weight: float = 0.5
     reward_error_rate_weight: float = 1.0
-    reward_predicted_error_weight: float = 0.5
     reward_decode_failure_penalty: float = 2.0
 
     # GC content target range
@@ -67,8 +70,17 @@ class Config:
     statistics_filename: str = "statistics_summary.csv"
 
     # training sequence length used during the reinforcement learning loop
+    # lengths are sampled per sequence if using curriculum/length varying
     training_sequence_length: int = 128
 
+    # multi-block adaptive encoding
+    number_of_encoding_blocks: int = 4                   # N blocks for fixed_count policy
+    block_policy: str = "fixed_count"                    # "fixed_count" or "fixed_size"
+    fixed_block_size_nt: int = 32                        # nt per block for fixed_size policy
+    
+    use_header_free_encoding: bool = False               # if True, mapping k = f(decoded block k-1)
+    header_repetition_code_length: int = 3               # times mapping index is repeated in overhead
+    
     # multi-copy redundancy
     number_of_copies: int = 3                            # copies stored per data block (1-5)
 

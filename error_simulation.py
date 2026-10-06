@@ -57,61 +57,86 @@ def simulate_errors(
 ) -> Tuple[str, dict]:
     """
     Apply stochastic, context-dependent sequencing errors.
-
-    Local error modulation:
-      - Homopolymer runs >= 3 multiply error rates by
-        (1 + 0.3 * (run_length - 2))
-      - GC content outside [0.35, 0.65] multiplies error rates by
-        (1 + 2 * |gc - 0.5|)
-
-    Mappings that produce fewer homopolymers and more balanced GC
-    content will experience genuinely lower error rates, which is
-    the signal the reinforcement learning agent exploits.
     """
     if random_generator is None:
         random_generator = np.random.default_rng()
 
-    result = []
-    statistics = {"substitutions": 0, "insertions": 0, "deletions": 0}
+    seq_len = len(dna_sequence)
+    if seq_len == 0:
+        return "", {"substitutions": 0, "insertions": 0, "deletions": 0}
 
-    for position, nucleotide in enumerate(dna_sequence):
-        # context-dependent rate multiplier
-        homopolymer_length = _local_homopolymer(dna_sequence, position)
-        gc_local = _local_gc(dna_sequence, position)
+    seq_arr = np.array(list(dna_sequence))
+    
+    # Vectorized homopolymer calculation
+    run_lengths = np.ones(seq_len, dtype=int)
+    changes = np.concatenate(([True], seq_arr[1:] != seq_arr[:-1], [True]))
+    change_idx = np.where(changes)[0]
+    runs = np.diff(change_idx)
+    for start, length in zip(change_idx[:-1], runs):
+        run_lengths[start:start+length] = length
 
-        multiplier = 1.0
-        # homopolymer penalty: runs >= 3 increase errors
-        if homopolymer_length >= 3:
-            multiplier *= (1.0 + 0.3 * (homopolymer_length - 2))
-        # GC imbalance penalty
-        if gc_local < 0.35 or gc_local > 0.65:
-            multiplier *= (1.0 + 2.0 * abs(gc_local - 0.5))
+    # Vectorized GC calculation
+    is_gc = (seq_arr == 'G') | (seq_arr == 'C')
+    cum_gc = np.concatenate(([0], np.cumsum(is_gc)))
+    starts = np.maximum(0, np.arange(seq_len) - 5)
+    ends = np.minimum(seq_len, np.arange(seq_len) + 5)
+    gc_local = (cum_gc[ends] - cum_gc[starts]) / (ends - starts)
 
-        local_substitution_rate = min(substitution_rate * multiplier, 0.5)
-        local_insertion_rate = min(insertion_rate * multiplier, 0.3)
-        local_deletion_rate = min(deletion_rate * multiplier, 0.3)
+    # Multipliers
+    multiplier = np.ones(seq_len, dtype=float)
+    
+    mask_hp = run_lengths >= 3
+    multiplier[mask_hp] *= (1.0 + 0.3 * (run_lengths[mask_hp] - 2))
+    
+    mask_gc = (gc_local < 0.35) | (gc_local > 0.65)
+    multiplier[mask_gc] *= (1.0 + 2.0 * np.abs(gc_local[mask_gc] - 0.5))
 
-        random_value = random_generator.random()
+    local_sub = np.minimum(substitution_rate * multiplier, 0.5)
+    local_ins = np.minimum(insertion_rate * multiplier, 0.3)
+    local_del = np.minimum(deletion_rate * multiplier, 0.3)
 
-        # priority: deletion > substitution > pass-through
-        if random_value < local_deletion_rate:
-            statistics["deletions"] += 1
-            continue
-        elif random_value < local_deletion_rate + local_substitution_rate:
-            alternatives = [n for n in NUCLEOTIDES if n != nucleotide]
-            nucleotide = alternatives[random_generator.integers(0, len(alternatives))]
-            statistics["substitutions"] += 1
+    r1 = random_generator.random(seq_len)
+    r2 = random_generator.random(seq_len)
 
-        result.append(nucleotide)
+    deletions = r1 < local_del
+    substitutions = (r1 >= local_del) & (r1 < local_del + local_sub)
+    insertions = r2 < local_ins
 
-        # independent insertion check
-        if random_generator.random() < local_insertion_rate:
-            inserted_nucleotide = NUCLEOTIDES[random_generator.integers(0, 4)]
-            result.append(inserted_nucleotide)
-            statistics["insertions"] += 1
+    stats = {
+        "substitutions": int(np.sum(substitutions)),
+        "insertions": int(np.sum(insertions)),
+        "deletions": int(np.sum(deletions))
+    }
 
-    mutated_sequence = "".join(result)
-    return mutated_sequence, statistics
+    # Pre-generate mutations
+    sub_choices = []
+    if stats["substitutions"] > 0:
+        for i in np.where(substitutions)[0]:
+            orig = seq_arr[i]
+            alts = [n for n in NUCLEOTIDES if n != orig]
+            sub_choices.append(alts[random_generator.integers(0, 3)])
+            
+    ins_choices = []
+    if stats["insertions"] > 0:
+        ins_choices = [NUCLEOTIDES[i] for i in random_generator.integers(0, 4, size=stats["insertions"])]
+
+    # Build sequence
+    out = []
+    sub_idx = 0
+    ins_idx = 0
+    for i in range(seq_len):
+        if not deletions[i]:
+            if substitutions[i]:
+                out.append(sub_choices[sub_idx])
+                sub_idx += 1
+            else:
+                out.append(seq_arr[i])
+        
+        if insertions[i]:
+            out.append(ins_choices[ins_idx])
+            ins_idx += 1
+
+    return "".join(out), stats
 
 
 def compute_error_rate(original: str, mutated: str) -> float:

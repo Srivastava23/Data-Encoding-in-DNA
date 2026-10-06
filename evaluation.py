@@ -20,6 +20,9 @@ import numpy as np
 from typing import Dict, List, Optional
 from scipy import stats as scipy_stats
 
+from training_pipeline_v3 import _compute_block_state
+from encoding import get_block_splits, decode_block_sequence
+import torch
 from config import Config
 from encoding import (
     BASELINE_MAPPING, BASELINE_MAPPING_INDEX, ALL_MAPPINGS,
@@ -31,7 +34,7 @@ from encoding import (
 from error_simulation import simulate_errors, compute_error_rate
 from decoder import decode_dna_to_binary, compute_bit_accuracy
 from sequence_metrics import gc_content, stability_score, normalized_max_homopolymer
-from rl_agent import PPOAgent
+from rl_agent_v3 import PPOAgentV3 as PPOAgent
 from error_predictor import ErrorPredictor
 from redundancy import encode_with_redundancy
 
@@ -91,47 +94,42 @@ def _evaluate_reinforcement_learning_trial(
     binary_bits: np.ndarray, config: Config, random_generator: np.random.Generator,
     agent: PPOAgent, sequence_length: int,
 ) -> Dict[str, float]:
-    """Encode using the reinforcement learning agent's chosen action, conditioned on data distribution."""
-    from rl_environment import _compute_dibit_distribution
+    splits = get_block_splits(len(binary_bits), config)
+    N = len(splits)
+    block_actions = []
+    dna_so_far = ""
+    actor_hx, critic_hx = None, None
+    agent.network.eval()
+    with torch.no_grad():
+        for k in range(N):
+            state = _compute_block_state(binary_bits, splits, k, N, block_actions, dna_so_far)
+            state_t = torch.tensor(state, dtype=torch.float32).to(agent.device)
+            logits, val, actor_hx, critic_hx = agent.network(state_t, actor_hx, critic_hx)
+            action_int = torch.argmax(logits).item()
+            
+            b_start, b_end = splits[k]
+            block_bits = binary_bits[b_start:b_end]
+            mapping_idx = action_int
+            if config.use_header_free_encoding and k > 0:
+                prev_s, prev_e = splits[k - 1]
+                offset = int(np.sum(binary_bits[prev_s:prev_e])) % 24
+                mapping_idx = (mapping_idx + offset) % 24
+            block_dna = encode_binary_to_dna(block_bits, ALL_MAPPINGS[mapping_idx])
+            dna_so_far += block_dna
+            block_actions.append(action_int)
 
-    # compute state from this specific data sample
-    dibit_distribution = _compute_dibit_distribution(binary_bits)
-    state = np.array([
-        dibit_distribution[0], dibit_distribution[1], dibit_distribution[2], dibit_distribution[3],
-        float(np.max(dibit_distribution)),
-        sequence_length / 256.0,
-    ], dtype=np.float32)
-
-    action, _, _ = agent.select_action(state)
-
-    # encode
-    dna_sequence, primary_index, secondary_index = encode_with_action(binary_bits, action, random_generator)
-    # error simulation
-    mutated_sequence, _ = simulate_errors(dna_sequence, config.substitution_rate,
+    mutated_sequence, _ = simulate_errors(dna_so_far, config.substitution_rate,
                                           config.insertion_rate, config.deletion_rate, random_generator)
-    # decode with the same action
-    decoded_bits = decode_with_action(mutated_sequence, action, sequence_length)
-    return _compute_metrics(binary_bits, dna_sequence, mutated_sequence, decoded_bits)
+    decoded_bits = decode_block_sequence(mutated_sequence, block_actions, config)
+    return _compute_metrics(binary_bits, dna_so_far, mutated_sequence, decoded_bits)
+
 
 
 def _evaluate_redundancy_trial(
     binary_bits: np.ndarray, config: Config, random_generator: np.random.Generator,
     agent: PPOAgent, sequence_length: int,
 ) -> Dict[str, float]:
-    """Evaluate multi-copy redundancy with the reinforcement learning agent."""
-    from rl_environment import _compute_dibit_distribution
-
-    dibit_distribution = _compute_dibit_distribution(binary_bits)
-    state = np.array([
-        dibit_distribution[0], dibit_distribution[1], dibit_distribution[2], dibit_distribution[3],
-        float(np.max(dibit_distribution)),
-        sequence_length / 256.0,
-    ], dtype=np.float32)
-
-    action, _, _ = agent.select_action(state)
-
-    result = encode_with_redundancy(binary_bits, action, random_generator, config)
-
+    result = encode_with_redundancy(binary_bits, None, random_generator, config, agent=agent)
     return {
         "bit_accuracy": result["redundancy_accuracy"],
         "error_rate": result["consensus_error_rate"],
@@ -142,6 +140,7 @@ def _evaluate_redundancy_trial(
         "redundancy_accuracy": result["redundancy_accuracy"],
         "number_of_copies": result["number_of_copies"],
     }
+
 
 
 def _compute_metrics(original_bits, dna_sequence, mutated_sequence, decoded_bits) -> Dict[str, float]:
@@ -413,18 +412,8 @@ def run_redundancy_scaling(
                 )
 
                 for binary_bits in dataset:
-                    dibit_distribution = _compute_dibit_distribution(binary_bits)
-                    state = np.array([
-                        dibit_distribution[0], dibit_distribution[1],
-                        dibit_distribution[2], dibit_distribution[3],
-                        float(np.max(dibit_distribution)),
-                        sequence_length / 256.0,
-                    ], dtype=np.float32)
-
-                    action, _, _ = agent.select_action(state)
-
                     result = encode_with_redundancy(
-                        binary_bits, action, random_generator, test_config
+                        binary_bits, None, random_generator, test_config, agent=agent
                     )
                     trial_accuracies.append(result["redundancy_accuracy"])
                     trial_error_rates.append(result["consensus_error_rate"])

@@ -48,7 +48,7 @@
         </p>
         <div class="hero-stats">
             <div class="stat-pill">
-                <span class="stat-value">88.24%</span>
+                <span class="stat-value">88.96%</span>
                 <span class="stat-label">Accuracy (10 Copies, 64 nt)</span>
             </div>
             <div class="stat-pill">
@@ -194,7 +194,7 @@
             <div class="glass-card">
                 <h3>📊 Evaluation Setup</h3>
                 <ul class="setup-list">
-                    <li><strong>Sequence Lengths:</strong> 64, 128, 256, 512, 1024 nucleotides</li>
+                    <li><strong>Sequence Lengths:</strong> 64, 128, 256, 512 nucleotides (in-distribution), and 1024 nucleotides (out-of-distribution)</li>
                     <li><strong>Trials per Length:</strong> 100 frozen evaluation trials</li>
                     <li><strong>Seeds:</strong> 7 independent runs</li>
                     <li><strong>Validation:</strong> Every 500 epochs on held-out data</li>
@@ -450,7 +450,7 @@
             <canvas id="redundancy-analysis-chart" width="900" height="350"></canvas>
         </div>
         <div class="finding-highlight">
-            <div class="big-stat">88.24%</div>
+            <div class="big-stat">88.96%</div>
             <div class="big-label">Maximum decode accuracy achieved (10 copies at 64 nt) with redundant copies and majority voting.</div>
         </div>
     </div>
@@ -480,6 +480,13 @@
             Performance of all methods across five DNA sequence lengths, averaged over 7 independent seeds.
             Includes multi-copy redundancy results showing accuracy improvement.
         </p>
+
+        <div class="highlight-box" style="margin-top:2rem; background:rgba(231,76,60,0.1); border-color:#e74c3c;">
+            <h3 style="color:#e74c3c;">Key Finding: Redundancy Drives Accuracy</h3>
+            <p>
+                Statistical testing reveals that single-copy RL and Predictive RL methods do not significantly outperform the random per-block baseline or the fixed mapping baseline (p &gt; 0.05). The substantial improvements shown in the charts below — reaching up to 88.96% accuracy — are strictly the result of the multi-copy redundancy (majority voting) mechanism.
+            </p>
+        </div>
 
         <div class="chart-section">
             <h3 class="chart-title">Average Error Rate <span class="chart-subtitle">(lower is better)</span></h3>
@@ -525,15 +532,15 @@
                 <div class="arch-details">
                     <div class="detail-item">
                         <span class="detail-label">State</span>
-                        <span class="detail-value">6-dimension: normalised dibit frequency vector (4) + max frequency + normalised sequence length</span>
+                        <span class="detail-value">8-dimension block context: GC content, homopolymer run length, entropy, normalized block index, sequence length ratio, previous mapping index, previous nucleotide 1, and previous nucleotide 2.</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Actions</span>
-                        <span class="detail-value">96 composite actions (24 mappings × 4 secondary groups)</span>
+                        <span class="detail-value">24 base mappings (with header-free chaining where block mappings depend on previous block parity)</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Network</span>
-                        <span class="detail-value">2×64 hidden layers, Tanh activation, 10% dropout</span>
+                        <span class="detail-value">Recurrent Neural Network: Linear projection into a Gated Recurrent Unit (GRU) with 64 hidden dimensions, processing sequence blocks step-by-step.</span>
                     </div>
                 </div>
             </div>
