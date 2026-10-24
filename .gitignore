@@ -1,28 +1,33 @@
+# Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
-*.pyo
-*.egg-info/
-dist/
-build/
-.eggs/
-*.egg
+*.py[cod]
+*$py.class
 
-# IDE
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# IDE & Editors
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS junk
+# OS files
 desktop.ini
 Thumbs.db
 .DS_Store
 
-# results (uncomment to track)
-# results/checkpoints/
+# Local temporary / execution scripts
+run_website.bat
+*.bat
+scratch/
+*.tmp
+*.bak
+
+# Redundant archives
 results/colab_trained_models.zip
-results/colab_export.json
-results/checkpoints/
-results/results/
 dna_project.zip
 _old_v1/
+_archive/
